@@ -1,16 +1,33 @@
+// brian taylor vann
+
+import { URLBangMessageData } from "./urlbang.types.ts";
+
+type Broadcast<P = unknown> = (message: URLBangMessageData<P>) => void;
+type RecieverCallback<P = unknown> = (
+  e: MessageEvent<URLBangMessageData<P>>,
+) => void;
+type RemoveCallback = () => void;
+type AddRecieverCallback<P = unknown> = (
+  callback: RecieverCallback<P>,
+) => RemoveCallback;
+
 const DOMAIN = window.location.host;
-const rc = new BroadcastChannel(`${DOMAIN}:urlbang_reciever`);
-const bc = new BroadcastChannel(`${DOMAIN}:urlbang_broadcast`);
+const bc = new BroadcastChannel(`${DOMAIN}:urlbang`);
 
-// can use postMessage as a fallback
+const broadcast: Broadcast = (message) => {
+  message.broadcast = true;
+  bc.postMessage(message);
+};
 
-window.addEventListener("popstate", (e: PopStateEvent) => {
-  bc.postMessage(e.state);
-});
+const addRecieverCallback: AddRecieverCallback = (callback) => {
+  const wrappedCallback: RecieverCallback = (e) => {
+    if (e.data.broadcast) return;
+    callback(e);
+  };
 
-rc.addEventListener("message", (e: MessageEvent) => {
-  const { state, title, url } = e.data;
+  bc.addEventListener("message", wrappedCallback);
 
-  history.pushState(state, title, url);
-  bc.postMessage(state);
-});
+  return () => bc.removeEventListener("message", wrappedCallback);
+};
+
+export { addRecieverCallback, broadcast };

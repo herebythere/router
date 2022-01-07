@@ -1,11 +1,15 @@
 const DOMAIN = window.location.host;
-const rc = new BroadcastChannel(`${DOMAIN}:urlbang_reciever`);
-const bc = new BroadcastChannel(`${DOMAIN}:urlbang_broadcast`);
-window.addEventListener("popstate", (e) => {
-  bc.postMessage(e.state);
-});
-rc.addEventListener("message", (e) => {
-  const { state, title, url } = e.data;
-  history.pushState(state, title, url);
-  bc.postMessage(state);
-});
+const bc = new BroadcastChannel(`${DOMAIN}:urlbang`);
+const broadcast = (message) => {
+  message.broadcast = true;
+  bc.postMessage(message);
+};
+const addRecieverCallback = (callback) => {
+  const wrappedCallback = (e) => {
+    if (e.data.broadcast) return;
+    callback(e);
+  };
+  bc.addEventListener("message", wrappedCallback);
+  return () => bc.removeEventListener("message", wrappedCallback);
+};
+export { addRecieverCallback, broadcast };
