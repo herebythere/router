@@ -1,12 +1,18 @@
 // brian taylor vann
 
 import type { Messages } from "./urlbang.types.ts";
-import { BROADCAST, DOMAIN, RECIEVER, URLBANG } from "./urlbang.types.ts";
+import {
+  BROADCAST,
+  DISPATCH,
+  DOMAIN,
+  HIDDEN,
+  POP,
+  PUSH,
+  RECIEVER,
+  URLBANG,
+} from "./urlbang.types.ts";
 
-const HIDDEN = "hidden";
-const DISPATCH = "dispatch";
-const PUSH = "push";
-const POP = "pop";
+const POPSTATE = "popstate";
 
 const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
 const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
@@ -17,7 +23,7 @@ rc.addEventListener(
     if (document.visibilityState === HIDDEN) return;
 
     const { data } = e;
-    const {kind, direction} = data;
+    const { kind, direction } = data;
     if (kind !== DISPATCH) return;
     if (direction === POP) {
       history.back();
@@ -32,6 +38,6 @@ rc.addEventListener(
   },
 );
 
-window.addEventListener("popstate", (e: PopStateEvent) => {
+window.addEventListener(POPSTATE, (e: PopStateEvent) => {
   bc.postMessage({ ...e.state, kind: BROADCAST, direction: POP });
 });

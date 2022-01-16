@@ -12,7 +12,8 @@ const modifyHistoryList = (message: BroadcastMessage) => {
   }
 
   if (
-    historyList.firstChild !== null && direction === "pop" && historyList.children.length > 0
+    historyList.firstChild !== null && direction === "pop" &&
+    historyList.children.length > 0
   ) {
     historyList.removeChild(historyList.firstChild);
     return;

@@ -1,7 +1,15 @@
 // brian taylor vann
 
 import type { BroadcastMessage, DispatchMessage } from "./urlbang.types.ts";
-import { BROADCAST, DOMAIN, RECIEVER, URLBANG } from "./urlbang.types.ts";
+import {
+  BROADCAST,
+  DISPATCH,
+  DOMAIN,
+  POP,
+  PUSH,
+  RECIEVER,
+  URLBANG,
+} from "./urlbang.types.ts";
 
 type Push<P = unknown> = (url: string, title: string, params: P) => void;
 type Pop = () => void;
@@ -12,10 +20,6 @@ type RemoveListener = () => void;
 type AddListener<P = unknown> = (
   listener: Listener<P>,
 ) => RemoveListener;
-
-const DISPATCH = "dispatch";
-const PUSH = "push";
-const POP = "pop";
 
 const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
 const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
