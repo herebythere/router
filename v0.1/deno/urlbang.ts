@@ -1,33 +1,40 @@
 // brian taylor vann
 
-import { URLBangMessageData } from "./urlbang.types.ts";
+import type { BroadcastMessage, DispatchMessage } from "./urlbang.types.ts";
+import { BROADCAST, DOMAIN, RECIEVER, URLBANG } from "./urlbang.types.ts";
 
-type Broadcast<P = unknown> = (message: URLBangMessageData<P>) => void;
-type RecieverCallback<P = unknown> = (
-  e: MessageEvent<URLBangMessageData<P>>,
+type Push<P = unknown> = (url: string, title: string, params: P) => void;
+type Pop = () => void;
+type Listener<P = unknown> = (
+  e: MessageEvent<BroadcastMessage<P>>,
 ) => void;
-type RemoveCallback = () => void;
-type AddRecieverCallback<P = unknown> = (
-  callback: RecieverCallback<P>,
-) => RemoveCallback;
+type RemoveListener = () => void;
+type AddListener<P = unknown> = (
+  listener: Listener<P>,
+) => RemoveListener;
 
-const DOMAIN = window.location.host;
-const bc = new BroadcastChannel(`${DOMAIN}:urlbang`);
+const DISPATCH = "dispatch";
+const PUSH = "push";
+const POP = "pop";
 
-const broadcast: Broadcast = (message) => {
-  message.broadcast = true;
-  bc.postMessage(message);
-};
+const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
+const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
 
-const addRecieverCallback: AddRecieverCallback = (callback) => {
-  const wrappedCallback: RecieverCallback = (e) => {
-    if (e.data.broadcast) return;
-    callback(e);
+const pop: Pop = () => bc.postMessage({ kind: DISPATCH, direction: POP });
+const push: Push = (url, title, params) =>
+  rc.postMessage({ kind: DISPATCH, direction: PUSH, url, title, params });
+
+const addListener: AddListener = (listener) => {
+  const wrappedlistener: Listener = (e) => {
+    if (e.data.kind !== BROADCAST) return;
+    listener(e);
   };
 
-  bc.addEventListener("message", wrappedCallback);
+  bc.addEventListener("message", wrappedlistener);
 
-  return () => bc.removeEventListener("message", wrappedCallback);
+  return () => bc.removeEventListener("message", wrappedlistener);
 };
 
-export { addRecieverCallback, broadcast };
+export type { BroadcastMessage, DispatchMessage, Listener };
+
+export { addListener, pop, push };

@@ -1,28 +1,37 @@
 // brian taylor vann
 
-import { URLBangMessageData } from "./urlbang.types.ts";
+import type { Messages } from "./urlbang.types.ts";
+import { BROADCAST, DOMAIN, RECIEVER, URLBANG } from "./urlbang.types.ts";
 
 const HIDDEN = "hidden";
-const DOMAIN = window.location.host;
+const DISPATCH = "dispatch";
+const PUSH = "push";
+const POP = "pop";
 
-const bc = new BroadcastChannel(`${DOMAIN}:urlbang`);
+const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
+const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
 
-bc.addEventListener(
+rc.addEventListener(
   "message",
-  (e: MessageEvent<URLBangMessageData<unknown>>) => {
+  (e: MessageEvent<Messages>) => {
     if (document.visibilityState === HIDDEN) return;
 
     const { data } = e;
-    if (!data.broadcast) return;
+    const {kind, direction} = data;
+    if (kind !== DISPATCH) return;
+    if (direction === POP) {
+      history.back();
+      return;
+    }
 
-    // prevent history cycles
-    data.broadcast = false;
+    const { title, url, params } = data;
+    const state = { params, title, url };
 
-    const { title, url } = data;
-
-    history.pushState(data, title, url);
-    bc.postMessage(data);
+    history.pushState(state, title, url);
+    bc.postMessage({ kind: BROADCAST, direction: PUSH, params, title, url });
   },
 );
 
-window.addEventListener("popstate", (e) => bc.postMessage(e.state));
+window.addEventListener("popstate", (e: PopStateEvent) => {
+  bc.postMessage({ ...e.state, kind: BROADCAST, direction: POP });
+});

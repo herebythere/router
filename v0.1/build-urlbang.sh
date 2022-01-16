@@ -1,10 +1,10 @@
 #!/bin/bash
 
 current_dir=`dirname $0`
-bundled_pathname=$current_dir/../bundled/urlbang.js 
-target_pathname=$current_dir/urlbang.ts
-history_target_pathname=$current_dir/urlbang.history.ts
-history_bundled_pathname=$current_dir/../bundled/urlbang.history.js 
+bundled_pathname=$current_dir/bundled/urlbang.js 
+target_pathname=$current_dir/deno/urlbang.ts
+history_target_pathname=$current_dir/deno/urlbang.history.ts
+history_bundled_pathname=$current_dir/bundled/urlbang.history.js 
 tsconfig_pathname=$current_dir/tsconfig.json
 
 
