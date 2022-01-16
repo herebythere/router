@@ -1,18 +1,17 @@
 // brian taylor vann
 
-import type { BroadcastMessage, DispatchMessage } from "./urlbang.types.ts";
+import type { BroadcastMessage, Direction } from "./urlbang.types.ts";
 import {
-  BROADCAST,
-  DISPATCH,
-  DOMAIN,
-  POP,
+  BACK,
+  FORWARD,
+  HIDDEN,
   PUSH,
   RECIEVER,
   URLBANG,
 } from "./urlbang.types.ts";
 
-type Push<P = unknown> = (url: string, title: string, params: P) => void;
-type Pop = () => void;
+type PushEntry<P = unknown> = (url: string, title: string, params?: P) => void;
+type GoBack = () => void;
 type Listener<P = unknown> = (
   e: MessageEvent<BroadcastMessage<P>>,
 ) => void;
@@ -21,24 +20,29 @@ type AddListener<P = unknown> = (
   listener: Listener<P>,
 ) => RemoveListener;
 
-const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
-const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
+const rc = new BroadcastChannel(RECIEVER);
+const bc = new BroadcastChannel(URLBANG);
 
-const pop: Pop = () => bc.postMessage({ kind: DISPATCH, direction: POP });
-const push: Push = (url, title, params) =>
-  rc.postMessage({ kind: DISPATCH, direction: PUSH, url, title, params });
+const goBack: GoBack = () => rc.postMessage({ direction: BACK });
+const pushEntry: PushEntry = (url, title, params) =>
+  rc.postMessage({ direction: PUSH, url, title, params });
 
 const addListener: AddListener = (listener) => {
-  const wrappedlistener: Listener = (e) => {
-    if (e.data.kind !== BROADCAST) return;
-    listener(e);
-  };
+  bc.addEventListener("message", listener);
 
-  bc.addEventListener("message", wrappedlistener);
-
-  return () => bc.removeEventListener("message", wrappedlistener);
+  return () => bc.removeEventListener("message", listener);
 };
 
-export type { BroadcastMessage, DispatchMessage, Listener };
+export type { BroadcastMessage, Direction, Listener };
 
-export { addListener, pop, push };
+export {
+  addListener,
+  BACK,
+  FORWARD,
+  goBack,
+  HIDDEN,
+  PUSH,
+  pushEntry,
+  RECIEVER,
+  URLBANG,
+};

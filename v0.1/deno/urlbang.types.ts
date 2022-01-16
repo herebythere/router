@@ -1,40 +1,46 @@
-type Direction = "push" | "pop";
+// brian taylor vann
 
 interface PopMessage {
-  kind: "dispatch";
-  direction: "pop";
+  direction: "back";
 }
-
-interface PushMessage<P> {
-  kind: "dispatch";
-  direction: "push";
+interface MessageParams<P> {
   url: string;
   title: string;
   params: P;
 }
+
+type PushMessage<P = unknown> = {
+  direction: "push";
+} & MessageParams<P>;
 
 type DispatchMessage<P = unknown> =
   | PopMessage
   | PushMessage<P>;
 
-interface BroadcastMessage<P = unknown> {
-  kind: "broadcast";
+type Direction = "forward" | "back" | "push";
+
+type BroadcastMessage<P = unknown> = {
   direction: Direction;
-  url: string;
-  title: string;
-  params: P;
-}
+} & MessageParams<P>;
 
-const URLBANG = "urlbang";
-const RECIEVER = "reciever";
-const BROADCAST = "broadcast";
-const DISPATCH = "dispatch";
-const PUSH = "push";
-const POP = "pop";
+type StateParams<P = unknown> = {
+  index: number;
+} & MessageParams<P>;
+
 const DOMAIN = window.location.host;
+const URLBANG = `${DOMAIN}:urlbang`;
+const RECIEVER = `${DOMAIN}:urlbang__reciever`;
+const PUSH = "push";
+const FORWARD = "forward";
+const BACK = "back";
+const HIDDEN = "hidden";
 
-type Messages<P = unknown> = BroadcastMessage<P> | DispatchMessage<P>;
+export type {
+  BroadcastMessage,
+  Direction,
+  DispatchMessage,
+  PushMessage,
+  StateParams,
+};
 
-export type { BroadcastMessage, DispatchMessage, Messages };
-
-export { BROADCAST, DISPATCH, DOMAIN, POP, PUSH, RECIEVER, URLBANG };
+export { BACK, FORWARD, HIDDEN, PUSH, RECIEVER, URLBANG };

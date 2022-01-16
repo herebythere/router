@@ -1,31 +1,35 @@
-const URLBANG = "urlbang";
-const RECIEVER = "reciever";
-const BROADCAST = "broadcast";
 const DOMAIN = window.location.host;
-const DISPATCH = "dispatch";
+const URLBANG = `${DOMAIN}:urlbang`;
+const RECIEVER = `${DOMAIN}:urlbang__reciever`;
 const PUSH = "push";
-const POP = "pop";
-const rc = new BroadcastChannel(`${DOMAIN}:${URLBANG}_${RECIEVER}`);
-const bc = new BroadcastChannel(`${DOMAIN}:${URLBANG}`);
-const pop = () =>
-  bc.postMessage({
-    kind: DISPATCH,
-    direction: POP,
-  });
-const push = (url, title, params) =>
+const FORWARD = "forward";
+const BACK = "back";
+const HIDDEN = "hidden";
+const rc = new BroadcastChannel(RECIEVER);
+const bc = new BroadcastChannel(URLBANG);
+const goBack = () =>
   rc.postMessage({
-    kind: DISPATCH,
+    direction: BACK,
+  });
+const pushEntry = (url, title, params) =>
+  rc.postMessage({
     direction: PUSH,
     url,
     title,
     params,
   });
 const addListener = (listener) => {
-  const wrappedlistener = (e) => {
-    if (e.data.kind !== BROADCAST) return;
-    listener(e);
-  };
-  bc.addEventListener("message", wrappedlistener);
-  return () => bc.removeEventListener("message", wrappedlistener);
+  bc.addEventListener("message", listener);
+  return () => bc.removeEventListener("message", listener);
 };
-export { addListener as addListener, pop as pop, push as push };
+export {
+  addListener as addListener,
+  BACK as BACK,
+  FORWARD as FORWARD,
+  goBack as goBack,
+  HIDDEN as HIDDEN,
+  PUSH as PUSH,
+  pushEntry as pushEntry,
+  RECIEVER as RECIEVER,
+  URLBANG as URLBANG,
+};
