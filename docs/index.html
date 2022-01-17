@@ -5,9 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>urlbang demo</title>
         <script src="./scripts/demo.js" type="module"></script>
+        <style>
+            .frame {
+                display: flex;
+                gap: 40px;
+            }
+        </style>
     </head>
     <body>
-        <demo-menu></demo-menu>
-        <div class="history-list"></div>
+        <div class="frame">
+            <demo-menu></demo-menu>
+            <demo-history></demo-history>
+        </div>
     </body>
 </html>

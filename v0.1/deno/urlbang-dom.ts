@@ -1,9 +1,14 @@
 // brian taylor vann
 
-import type { DispatchMessage } from "./urlbang.types.ts";
+import type {
+  BroadcastMessageData,
+  DispatchMessage,
+  HistoryModifier,
+} from "./urlbang.types.ts";
 import {
   BACK,
-  FORWARD,
+  ENTRY,
+  HASHCHANGE,
   HIDDEN,
   PUSH,
   RECIEVER,
@@ -15,51 +20,87 @@ import {
 // This module can only be accessed with a message
 // through a Broadcast Channel.
 
+type GetWindowPathname = () => string;
+type CreateHistoryEntry = (
+  kind: HistoryModifier,
+  index: number,
+) => BroadcastMessageData;
+
 const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 
 const rc = new BroadcastChannel(RECIEVER);
 const bc = new BroadcastChannel(URLBANG);
 
-let historyIndex = -1;
+let historyIndex = 0;
+
+const getWindowPathname: GetWindowPathname = () =>
+  window.location.href.substring(window.origin.length);
+
+const replaceHistoryEntry: CreateHistoryEntry = (kind, index) => {
+  const pathname = getWindowPathname();
+  const { title } = document;
+
+  const state: BroadcastMessageData = {
+    data: undefined,
+    kind,
+    index,
+    pathname,
+    title,
+  };
+
+  history.replaceState(state, document.title, pathname);
+
+  return state;
+};
 
 rc.addEventListener(
   "message",
   (e: MessageEvent<DispatchMessage>) => {
     if (document.visibilityState === HIDDEN) return;
 
-    const { direction } = e.data;
-    if (direction === BACK) {
+    const { kind } = e.data;
+    if (kind === BACK) {
       history.back();
       return;
     }
 
-    const { url } = e.data;
-    const pathname = ("/" + url);
-    if (pathname === window.location.pathname) {
+    let { pathname } = e.data;
+    const currPathname = getWindowPathname();
+    if (pathname === currPathname) {
       return;
     }
 
     historyIndex += 1;
-    const { title, params } = e.data;
-    const state = { index: historyIndex, params, title, url };
+    const { title, data } = e.data;
+    const state = { index: historyIndex, data, title, pathname, kind: PUSH };
 
-    history.pushState(state, title, url);
+    history.pushState(state, title, pathname);
 
-    bc.postMessage({ direction: PUSH, params, title, url });
+    bc.postMessage(state);
   },
 );
 
 window.addEventListener(POPSTATE, (e: PopStateEvent) => {
   if (e.state === null) {
-    bc.postMessage({ direction: BACK, title: "", url: "" });
-    return;
+    historyIndex += 1;
   }
 
-  const { params, title, url, index } = e.state;
+  const state: BroadcastMessageData = (e.state === null)
+    ? replaceHistoryEntry(HASHCHANGE, historyIndex)
+    : e.state;
 
-  const direction = (historyIndex > index) ? BACK : FORWARD;
+  historyIndex = state.index;
 
-  historyIndex = index;
+  bc.postMessage(state);
+});
 
-  bc.postMessage({ params, title, url, direction });
+window.addEventListener(PAGESHOW, (e: PageTransitionEvent) => {
+  const state: BroadcastMessageData = (history.state === null)
+    ? replaceHistoryEntry(ENTRY, historyIndex)
+    : history.state;
+
+  historyIndex = state.index;
+
+  bc.postMessage(state);
 });

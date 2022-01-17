@@ -2,59 +2,70 @@ const DOMAIN = window.location.host;
 const URLBANG = `${DOMAIN}:urlbang`;
 const RECIEVER = `${DOMAIN}:urlbang__reciever`;
 const PUSH = "push";
-const FORWARD = "forward";
 const BACK = "back";
 const HIDDEN = "hidden";
+const HASHCHANGE = "hashchange";
+const ENTRY = "entry";
 const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 const rc = new BroadcastChannel(RECIEVER);
 const bc = new BroadcastChannel(URLBANG);
-let historyIndex = -1;
+let historyIndex = 0;
+const getWindowPathname = () =>
+  window.location.href.substring(window.origin.length);
+const replaceHistoryEntry = (kind, index) => {
+  const pathname = getWindowPathname();
+  const { title } = document;
+  const state = {
+    data: undefined,
+    kind,
+    index,
+    pathname,
+    title,
+  };
+  history.replaceState(state, document.title, pathname);
+  return state;
+};
 rc.addEventListener("message", (e3) => {
   if (document.visibilityState === HIDDEN) return;
-  const { direction } = e3.data;
-  if (direction === BACK) {
+  const { kind } = e3.data;
+  if (kind === BACK) {
     history.back();
     return;
   }
-  const { url } = e3.data;
-  const pathname = "/" + url;
-  if (pathname === window.location.pathname) {
+  let { pathname } = e3.data;
+  const currPathname = getWindowPathname();
+  if (pathname === currPathname) {
     return;
   }
   historyIndex += 1;
-  const { title, params } = e3.data;
+  const { title, data } = e3.data;
   const state = {
     index: historyIndex,
-    params,
+    data,
     title,
-    url,
+    pathname,
+    kind: PUSH,
   };
-  history.pushState(state, title, url);
-  bc.postMessage({
-    direction: PUSH,
-    params,
-    title,
-    url,
-  });
+  history.pushState(state, title, pathname);
+  bc.postMessage(state);
 });
 window.addEventListener(POPSTATE, (e4) => {
   if (e4.state === null) {
-    bc.postMessage({
-      direction: BACK,
-      title: "",
-      url: "",
-    });
-    return;
+    historyIndex += 1;
   }
-  const { params, title, url, index } = e4.state;
-  const direction = historyIndex > index ? BACK : FORWARD;
-  historyIndex = index;
-  bc.postMessage({
-    params,
-    title,
-    url,
-    direction,
-  });
+  const state = e4.state === null
+    ? replaceHistoryEntry(HASHCHANGE, historyIndex)
+    : e4.state;
+  historyIndex = state.index;
+  bc.postMessage(state);
+});
+window.addEventListener(PAGESHOW, (e) => {
+  const state = history.state === null
+    ? replaceHistoryEntry(ENTRY, historyIndex)
+    : history.state;
+  historyIndex = state.index;
+  bc.postMessage(state);
 });
 const t = window.ShadowRoot &&
     (window.ShadyCSS === void 0 || window.ShadyCSS.nativeShadow) &&
@@ -83,6 +94,21 @@ class s {
   }
 }
 const o = (t2) => new s(typeof t2 == "string" ? t2 : t2 + "", e),
+  r = (t2, ...n2) => {
+    const o2 = t2.length === 1
+      ? t2[0]
+      : n2.reduce((e2, n3, s2) =>
+        e2 + ((t3) => {
+          if (t3._$cssResult$ === true) return t3.cssText;
+          if (typeof t3 == "number") return t3;
+          throw Error(
+            "Value passed to 'css' function must be a 'css' function result: " +
+              t3 +
+              ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.",
+          );
+        })(n3) + t2[s2 + 1], t2[0]);
+    return new s(o2, e);
+  },
   i = (e2, n2) => {
     t
       ? e2.adoptedStyleSheets = n2.map((t2) =>
@@ -105,13 +131,13 @@ const o = (t2) => new s(typeof t2 == "string" ? t2 : t2 + "", e),
       : t2;
 var s1;
 const e1 = window.trustedTypes,
-  r = e1 ? e1.emptyScript : "",
+  r1 = e1 ? e1.emptyScript : "",
   h = window.reactiveElementPolyfillSupport,
   o1 = {
     toAttribute(t2, i2) {
       switch (i2) {
         case Boolean:
-          t2 = t2 ? r : null;
+          t2 = t2 ? r1 : null;
           break;
         case Object:
         case Array:
@@ -438,7 +464,7 @@ const i1 = globalThis.trustedTypes,
   n2 = `<${o2}>`,
   l1 = document,
   h1 = (t2 = "") => l1.createComment(t2),
-  r1 = (t2) => t2 === null || typeof t2 != "object" && typeof t2 != "function",
+  r2 = (t2) => t2 === null || typeof t2 != "object" && typeof t2 != "function",
   d = Array.isArray,
   u = (t2) => {
     var i2;
@@ -468,9 +494,11 @@ const i1 = globalThis.trustedTypes,
   T = new WeakMap(),
   x = (t2, i2, s22) => {
     var e21, o21;
-    const n21 =
-      (e21 = s22 == null ? void 0 : s22.renderBefore) !== null && e21 !== void 0
-        ? e21 : i2;
+    const n21 = (e21 = s22 == null
+            ? void 0
+            : s22.renderBefore) !== null && e21 !== void 0
+      ? e21
+      : i2;
     let l2 = n21._$litPart$;
     if (l2 === void 0) {
       const t3 = (o21 = s22 == null
@@ -490,7 +518,7 @@ const i1 = globalThis.trustedTypes,
   A = l1.createTreeWalker(l1, 129, null, false),
   C = (t2, i2) => {
     const o22 = t2.length - 1, l2 = [];
-    let h2, r2 = i2 === 2 ? "<svg>" : "", d2 = c;
+    let h2, r21 = i2 === 2 ? "<svg>" : "", d2 = c;
     for (let i3 = 0; i3 < o22; i3++) {
       const s23 = t2[i3];
       let o3, u3, p2 = -1, $2 = 0;
@@ -514,7 +542,11 @@ const i1 = globalThis.trustedTypes,
               ? p2 = -2
               : (p2 = d2.lastIndex - u3[2].length,
                 o3 = u3[1],
-                d2 = u3[3] === void 0 ? f : u3[3] === '"' ? m : _)
+                d2 = u3[3] === void 0
+                  ? f
+                  : u3[3] === '"'
+                  ? m
+                  : _)
             : d2 === m || d2 === _
             ? d2 = f
             : d2 === v || d2 === a1
@@ -522,12 +554,12 @@ const i1 = globalThis.trustedTypes,
             : (d2 = f, h2 = void 0);
       }
       const y2 = d2 === f && t2[i3 + 1].startsWith("/>") ? " " : "";
-      r2 += d2 === c ? s23 + n2
+      r21 += d2 === c ? s23 + n2
       : p2 >= 0
         ? (l2.push(o3), s23.slice(0, p2) + "$lit$" + s23.slice(p2) + e2 + y2)
         : s23 + e2 + (p2 === -2 ? (l2.push(void 0), i3) : y2);
     }
-    const u2 = r2 + (t2[o22] || "<?>") + (i2 === 2 ? "</svg>" : "");
+    const u2 = r21 + (t2[o22] || "<?>") + (i2 === 2 ? "</svg>" : "");
     if (!Array.isArray(t2) || !t2.hasOwnProperty("raw")) {
       throw Error("invalid template strings array");
     }
@@ -540,7 +572,7 @@ class E {
   constructor({ strings: t2, _$litType$: s24 }, n22) {
     let l2;
     this.parts = [];
-    let r2 = 0, d2 = 0;
+    let r22 = 0, d2 = 0;
     const u2 = t2.length - 1, c2 = this.parts, [v2, a2] = C(t2, s24);
     if (
       this.el = E.createElement(v2, n22),
@@ -564,7 +596,7 @@ class E {
                   i3 = /([.?@])?(.*)/.exec(s3);
                 c2.push({
                   type: 1,
-                  index: r2,
+                  index: r22,
                   name: i3[2],
                   strings: t4,
                   ctor: i3[1] === "."
@@ -578,7 +610,7 @@ class E {
               } else {
                 c2.push({
                   type: 6,
-                  index: r2,
+                  index: r22,
                 });
               }
             }
@@ -594,7 +626,7 @@ class E {
                 A.nextNode(),
                 c2.push({
                   type: 2,
-                  index: ++r2,
+                  index: ++r22,
                 });
             }
             l2.append(t3[s3], h1());
@@ -604,19 +636,19 @@ class E {
         if (l2.data === o2) {
           c2.push({
             type: 2,
-            index: r2,
+            index: r22,
           });
         } else {
           let t3 = -1;
           for (; (t3 = l2.data.indexOf(e2, t3 + 1)) !== -1;) {
             c2.push({
               type: 7,
-              index: r2,
+              index: r22,
             }), t3 += e2.length - 1;
           }
         }
       }
-      r2++;
+      r22++;
     }
   }
   static createElement(t2, i2) {
@@ -630,7 +662,7 @@ function P(t2, i2, s26 = t2, e22) {
   let d2 = e22 !== void 0
     ? (o23 = s26._$Cl) === null || o23 === void 0 ? void 0 : o23[e22]
     : s26._$Cu;
-  const u2 = r1(i2) ? void 0 : i2._$litDirective$;
+  const u2 = r2(i2) ? void 0 : i2._$litDirective$;
   return (d2 == null ? void 0 : d2.constructor) !== u2 &&
     ((n23 = d2 == null ? void 0 : d2._$AO) === null || n23 === void 0 ||
       n23.call(d2, false),
@@ -656,11 +688,10 @@ class V {
   p(t2) {
     var i2;
     const { el: { content: s27 }, parts: e23 } = this._$AD,
-      o24 = ((i2 = t2 == null
-              ? void 0
-              : t2.creationScope) !== null && i2 !== void 0
-        ? i2
-        : l1).importNode(s27, true);
+      o24 =
+        ((i2 = t2 == null ? void 0 : t2.creationScope) !== null && i2 !== void 0
+          ? i2
+          : l1).importNode(s27, true);
     A.currentNode = o24;
     let n24 = A.nextNode(), h2 = 0, r2 = 0, d2 = e23[0];
     for (; d2 !== void 0;) {
@@ -722,7 +753,7 @@ class N {
   }
   _$AI(t2, i2 = this) {
     t2 = P(this, t2, i2),
-      r1(t2)
+      r2(t2)
         ? t2 === w || t2 == null || t2 === ""
           ? (this._$AH !== w && this._$AR(), this._$AH = w)
           : t2 !== this._$AH && t2 !== b && this.$(t2)
@@ -741,7 +772,7 @@ class N {
     this._$AH !== t2 && (this._$AR(), this._$AH = this.M(t2));
   }
   $(t2) {
-    this._$AH !== w && r1(this._$AH)
+    this._$AH !== w && r2(this._$AH)
       ? this._$AA.nextSibling.data = t2
       : this.S(l1.createTextNode(t2)), this._$AH = t2;
   }
@@ -822,7 +853,7 @@ class S1 {
     let n25 = false;
     if (o29 === void 0) {
       t2 = P(this, t2, i2, 0),
-        n25 = !r1(t2) || t2 !== this._$AH && t2 !== b,
+        n25 = !r2(t2) || t2 !== this._$AH && t2 !== b,
         n25 && (this._$AH = t2);
     } else {
       const e3 = t2;
@@ -830,7 +861,7 @@ class S1 {
       for (t2 = o29[0], l2 = 0; l2 < o29.length - 1; l2++) {
         h2 = P(this, e3[s2 + l2], i2, l2),
           h2 === b && (h2 = this._$AH[l2]),
-          n25 || (n25 = !r1(h2) || h2 !== this._$AH[l2]),
+          n25 || (n25 = !r2(h2) || h2 !== this._$AH[l2]),
           h2 === w
             ? t2 = w
             : t2 !== w && (t2 += (h2 != null ? h2 : "") + o29[l2 + 1]),
@@ -970,53 +1001,174 @@ n3 == null || n3({
   : globalThis.litElementVersions = []).push("3.1.1");
 const rc1 = new BroadcastChannel(RECIEVER);
 new BroadcastChannel(URLBANG);
-const pushEntry = (url, title, params) =>
+const pushEntry = (pathname, title, params) => {
   rc1.postMessage({
-    direction: PUSH,
-    url,
+    kind: PUSH,
+    pathname,
     title,
     params,
   });
+};
 const bc1 = new BroadcastChannel(URLBANG);
-let previousDirection;
-let historyIndex1 = 0;
+const HIDDEN1 = "hidden";
+let previousIndex = 0;
 const historyEntries = [];
 bc1.addEventListener("message", (e6) => {
-  if (document.visibilityState === HIDDEN) return;
-  const { direction } = e6.data;
-  if (direction === PUSH) {
-    if (previousDirection !== PUSH) {
-      historyEntries.splice(historyIndex1);
-    }
-    previousDirection = PUSH;
-    historyIndex1 += 1;
-    historyEntries.push(e6.data);
+  if (document.visibilityState === HIDDEN1) return;
+  const { index, kind } = e6.data;
+  if (historyEntries[index] === undefined) {
+    historyEntries[index] = e6.data;
   }
-  if (direction === BACK) {
-    previousDirection = BACK;
-    historyIndex1 -= 1;
-  }
-  if (direction === FORWARD) {
-    previousDirection = FORWARD;
-    historyIndex1 += 1;
-  }
-  console.log(historyIndex1);
+  const indexDelta = index - previousIndex;
+  console.log("index delta:", indexDelta);
+  previousIndex = index;
+  console.log(index, kind);
   console.log(historyEntries);
+  dispatch();
 });
-const urlData = {
-  home: "home page",
-  about: "about this page",
-  projects: "projects created by the author",
-  articles: "articles written by the author",
+let subscriptions = [];
+const subscribe = (callback) => {
+  subscriptions.push(callback);
+  return subscriptions.length - 1;
 };
+const unsubscribe = (receipt) => {
+  const updatedSubscriptions = [];
+  const receiptNum = receipt.toString();
+  for (const index in subscriptions) {
+    if (receiptNum === index) {
+      continue;
+    }
+    updatedSubscriptions.push(subscriptions[index]);
+  }
+  subscriptions = updatedSubscriptions;
+};
+const dispatch = () => {
+  for (const subscription of subscriptions) {
+    subscription();
+  }
+};
+const createHistoryListItems = () => {
+  const templates = [];
+  for (const entry of historyEntries) {
+    if (entry === undefined || entry === null) {
+      templates.push($`<li class="unknown"> unknown history state</li>`);
+      continue;
+    }
+    const { index, pathname, title, kind } = entry;
+    if (index === previousIndex) {
+      templates.push($`
+                <li class="current">
+                    <div>pathname: ${pathname}</div>
+                    <div>title: ${title}</div>
+                    <div>kind: ${kind}
+                </li>
+            `);
+      continue;
+    }
+    templates.push($`
+            <li class="defined">
+                <div>pathname: ${pathname}</div>
+                <div>title: ${title}</div>
+                <div>kind: ${kind}
+            </li>
+        `);
+  }
+  return templates;
+};
+const styles1 = r`
+    h3, div, ul, li {
+        box-sizing: border-box;
+    }
+    h3 {
+        margin-top: 0;
+    }
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .container {
+        border: 1px solid #efefef;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .unknown {
+        color: #878787;
+    }
+    .unknown:hover {
+        background-color: #efefef;
+        outline: 1px solid #ababab;
+    }
+
+    .defined {
+        color: #434343;
+    }
+    .defined:hover {
+        background-color: #efefef;
+        outline: 1px solid #565656;
+    }
+
+    .current {
+        color: ##1e5bbd;
+        outline: 1px solid #1e5bbd;
+    }
+    .current:hover {
+        background-color: #e3eeff;
+    }
+`;
+class DemoHistory extends s3 {
+  static styles = [
+    styles1,
+  ];
+  receipt;
+  render() {
+    const historyListItems = createHistoryListItems();
+    return $`
+            <h3>Demo History:</h3>
+            <ul class="container">${historyListItems}</ul>
+        `;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.receipt = subscribe(() => this.requestUpdate());
+  }
+  disconnectedCallback() {
+    if (this.receipt) {
+      unsubscribe(this.receipt);
+    }
+    super.disconnectedCallback();
+  }
+}
+customElements.define("demo-history", DemoHistory);
+const urlData = {
+  "/#/home": "home page",
+  "/#/about": "about this page",
+  "/#/projects": "projects created by the author",
+  "/#/articles": "articles written by the author",
+};
+const styles11 = r`
+    .container {
+        border: 1px solid #efefef;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+`;
 class DemoMenu extends s3 {
+  static styles = [
+    styles11,
+  ];
   render() {
     return $`
-            <div>
-                <input type="button" name="home" value="home" @pointerdown="${this.onPointerDown}">
-                <input type="button" name="about" value="about"  @pointerdown="${this.onPointerDown}">
-                <input type="button" name="projects" value="projects" @pointerdown="${this.onPointerDown}">
-                <input type="button" name="articles" value="articles" @pointerdown="${this.onPointerDown}">
+            <div class="container">
+                <input type="button" name="/#/home" value="home" @pointerdown="${this.onPointerDown}">
+                <input type="button" name="/#/about" value="about"  @pointerdown="${this.onPointerDown}">
+                <input type="button" name="/#/projects" value="projects" @pointerdown="${this.onPointerDown}">
+                <input type="button" name="/#/articles" value="articles" @pointerdown="${this.onPointerDown}">
             </div>
         `;
   }

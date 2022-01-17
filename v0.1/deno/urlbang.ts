@@ -1,6 +1,6 @@
 // brian taylor vann
 
-import type { BroadcastMessage, Direction } from "./urlbang.types.ts";
+import type { BroadcastMessageData, HistoryModifier } from "./urlbang.types.ts";
 import {
   BACK,
   FORWARD,
@@ -13,7 +13,7 @@ import {
 type PushEntry<P = unknown> = (url: string, title: string, params?: P) => void;
 type GoBack = () => void;
 type Listener<P = unknown> = (
-  e: MessageEvent<BroadcastMessage<P>>,
+  e: MessageEvent<BroadcastMessageData<P>>,
 ) => void;
 type RemoveListener = () => void;
 type AddListener<P = unknown> = (
@@ -23,9 +23,10 @@ type AddListener<P = unknown> = (
 const rc = new BroadcastChannel(RECIEVER);
 const bc = new BroadcastChannel(URLBANG);
 
-const goBack: GoBack = () => rc.postMessage({ direction: BACK });
-const pushEntry: PushEntry = (url, title, params) =>
-  rc.postMessage({ direction: PUSH, url, title, params });
+const goBack: GoBack = () => rc.postMessage({ kind: BACK });
+const pushEntry: PushEntry = (pathname, title, params) => {
+  rc.postMessage({ kind: PUSH, pathname, title, params });
+};
 
 const addListener: AddListener = (listener) => {
   bc.addEventListener("message", listener);
@@ -33,16 +34,6 @@ const addListener: AddListener = (listener) => {
   return () => bc.removeEventListener("message", listener);
 };
 
-export type { BroadcastMessage, Direction, Listener };
+export type { BroadcastMessageData, HistoryModifier, Listener };
 
-export {
-  addListener,
-  BACK,
-  FORWARD,
-  goBack,
-  HIDDEN,
-  PUSH,
-  pushEntry,
-  RECIEVER,
-  URLBANG,
-};
+export { addListener, goBack, pushEntry, RECIEVER, URLBANG };

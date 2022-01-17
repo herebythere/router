@@ -1,31 +1,29 @@
 // brian taylor vann
 
-interface PopMessage {
-  direction: "back";
-}
-interface MessageParams<P> {
-  url: string;
+interface MessageParams<D> {
+  pathname: string;
   title: string;
-  params: P;
+  data: D;
 }
 
-type PushMessage<P = unknown> = {
-  direction: "push";
-} & MessageParams<P>;
+interface PopMessage {
+  kind: "back";
+}
 
-type DispatchMessage<P = unknown> =
+type PushMessage<D = unknown> = {
+  kind: "push";
+} & MessageParams<D>;
+
+type DispatchMessage<D = unknown> =
   | PopMessage
-  | PushMessage<P>;
+  | PushMessage<D>;
 
-type Direction = "forward" | "back" | "push";
+type HistoryModifier = "push" | "hashchange" | "entry";
 
-type BroadcastMessage<P = unknown> = {
-  direction: Direction;
-} & MessageParams<P>;
-
-type StateParams<P = unknown> = {
+type BroadcastMessageData<D = unknown> = {
   index: number;
-} & MessageParams<P>;
+  kind: HistoryModifier;
+} & MessageParams<D>;
 
 const DOMAIN = window.location.host;
 const URLBANG = `${DOMAIN}:urlbang`;
@@ -34,13 +32,14 @@ const PUSH = "push";
 const FORWARD = "forward";
 const BACK = "back";
 const HIDDEN = "hidden";
+const HASHCHANGE = "hashchange";
+const ENTRY = "entry";
 
 export type {
-  BroadcastMessage,
-  Direction,
+  BroadcastMessageData,
   DispatchMessage,
+  HistoryModifier,
   PushMessage,
-  StateParams,
 };
 
-export { BACK, FORWARD, HIDDEN, PUSH, RECIEVER, URLBANG };
+export { BACK, ENTRY, FORWARD, HASHCHANGE, HIDDEN, PUSH, RECIEVER, URLBANG };
