@@ -1,6 +1,5 @@
-const DOMAIN = window.location.host;
-const URLBANG = `${DOMAIN}:urlbang`;
-const RECIEVER = `${DOMAIN}:urlbang__reciever`;
+const URLBANG = `/urlbang`;
+const RECEIVER = `/urlbang/receiver`;
 const PUSH = "push";
 const BACK = "back";
 const HIDDEN = "hidden";
@@ -8,9 +7,9 @@ const HASHCHANGE = "hashchange";
 const ENTRY = "entry";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
-const rc = new BroadcastChannel(RECIEVER);
+const rc = new BroadcastChannel(RECEIVER);
 const bc = new BroadcastChannel(URLBANG);
-let historyIndex = 0;
+let urlbangIndex = 0;
 const getWindowPathname = () =>
   window.location.href.substring(window.origin.length);
 const replaceHistoryEntry = (kind, index) => {
@@ -23,7 +22,7 @@ const replaceHistoryEntry = (kind, index) => {
     pathname,
     title,
   };
-  history.replaceState(state, document.title, pathname);
+  history.replaceState(state, title, pathname);
   return state;
 };
 rc.addEventListener("message", (e3) => {
@@ -35,36 +34,34 @@ rc.addEventListener("message", (e3) => {
   }
   let { pathname } = e3.data;
   const currPathname = getWindowPathname();
-  if (pathname === currPathname) {
-    return;
-  }
-  historyIndex += 1;
+  if (pathname === currPathname) return;
+  urlbangIndex += 1;
   const { title, data } = e3.data;
   const state = {
-    index: historyIndex,
+    index: urlbangIndex,
+    kind: PUSH,
     data,
     title,
     pathname,
-    kind: PUSH,
   };
   history.pushState(state, title, pathname);
   bc.postMessage(state);
 });
 window.addEventListener(POPSTATE, (e4) => {
   if (e4.state === null) {
-    historyIndex += 1;
+    urlbangIndex += 1;
   }
   const state = e4.state === null
-    ? replaceHistoryEntry(HASHCHANGE, historyIndex)
+    ? replaceHistoryEntry(HASHCHANGE, urlbangIndex)
     : e4.state;
-  historyIndex = state.index;
+  urlbangIndex = state.index;
   bc.postMessage(state);
 });
 window.addEventListener(PAGESHOW, (e) => {
   const state = history.state === null
-    ? replaceHistoryEntry(ENTRY, historyIndex)
+    ? replaceHistoryEntry(ENTRY, urlbangIndex)
     : history.state;
-  historyIndex = state.index;
+  urlbangIndex = state.index;
   bc.postMessage(state);
 });
 const t = window.ShadowRoot &&
@@ -494,11 +491,9 @@ const i1 = globalThis.trustedTypes,
   T = new WeakMap(),
   x = (t2, i2, s22) => {
     var e21, o21;
-    const n21 = (e21 = s22 == null
-            ? void 0
-            : s22.renderBefore) !== null && e21 !== void 0
-      ? e21
-      : i2;
+    const n21 =
+      (e21 = s22 == null ? void 0 : s22.renderBefore) !== null && e21 !== void 0
+        ? e21 : i2;
     let l2 = n21._$litPart$;
     if (l2 === void 0) {
       const t3 = (o21 = s22 == null
@@ -542,11 +537,7 @@ const i1 = globalThis.trustedTypes,
               ? p2 = -2
               : (p2 = d2.lastIndex - u3[2].length,
                 o3 = u3[1],
-                d2 = u3[3] === void 0
-                  ? f
-                  : u3[3] === '"'
-                  ? m
-                  : _)
+                d2 = u3[3] === void 0 ? f : u3[3] === '"' ? m : _)
             : d2 === m || d2 === _
             ? d2 = f
             : d2 === v || d2 === a1
@@ -688,10 +679,11 @@ class V {
   p(t2) {
     var i2;
     const { el: { content: s27 }, parts: e23 } = this._$AD,
-      o24 =
-        ((i2 = t2 == null ? void 0 : t2.creationScope) !== null && i2 !== void 0
-          ? i2
-          : l1).importNode(s27, true);
+      o24 = ((i2 = t2 == null
+              ? void 0
+              : t2.creationScope) !== null && i2 !== void 0
+        ? i2
+        : l1).importNode(s27, true);
     A.currentNode = o24;
     let n24 = A.nextNode(), h2 = 0, r2 = 0, d2 = e23[0];
     for (; d2 !== void 0;) {
@@ -999,7 +991,7 @@ n3 == null || n3({
 ((o3 = globalThis.litElementVersions) !== null && o3 !== void 0
   ? o3
   : globalThis.litElementVersions = []).push("3.1.1");
-const rc1 = new BroadcastChannel(RECIEVER);
+const rc1 = new BroadcastChannel(RECEIVER);
 new BroadcastChannel(URLBANG);
 const pushEntry = (pathname, title, params) => {
   rc1.postMessage({
@@ -1009,24 +1001,49 @@ const pushEntry = (pathname, title, params) => {
     params,
   });
 };
-const bc1 = new BroadcastChannel(URLBANG);
+const URLBANG1 = "/urlbang";
+const RECEIVER1 = "/urlbang/receiver";
 const HIDDEN1 = "hidden";
-let previousIndex = 0;
+const fallbackMessageData = {
+  kind: "unknown",
+  index: -1,
+  title: "title unknown",
+  pathname: "pathname unknown",
+  data: undefined,
+};
+const bc1 = new BroadcastChannel(URLBANG1);
+const rc2 = new BroadcastChannel(RECEIVER1);
 const historyEntries = [];
+let subscriptions = [];
+let previousIndex = 0;
+let maxIndex = 0;
 bc1.addEventListener("message", (e6) => {
   if (document.visibilityState === HIDDEN1) return;
   const { index, kind } = e6.data;
   if (historyEntries[index] === undefined) {
     historyEntries[index] = e6.data;
   }
-  const indexDelta = index - previousIndex;
-  console.log("index delta:", indexDelta);
+  if (
+    kind === "hashchange" && historyEntries[index]?.kind !== "recorded_change"
+  ) {
+    historyEntries[index] = {
+      ...e6.data,
+      kind: "recorded_change",
+    };
+    historyEntries.splice(index + 1);
+  }
+  maxIndex = Math.max(index, maxIndex);
+  console.log("maxindex:", maxIndex);
   previousIndex = index;
-  console.log(index, kind);
-  console.log(historyEntries);
   dispatch();
 });
-let subscriptions = [];
+rc2.addEventListener("message", (e7) => {
+  if (document.visibilityState === HIDDEN1) return;
+  const { kind } = e7.data;
+  if (kind === "push" && previousIndex !== maxIndex) {
+    historyEntries.splice(previousIndex + 1);
+  }
+});
 const subscribe = (callback) => {
   subscriptions.push(callback);
   return subscriptions.length - 1;
@@ -1049,74 +1066,87 @@ const dispatch = () => {
 };
 const createHistoryListItems = () => {
   const templates = [];
-  for (const entry of historyEntries) {
+  let entryIndex = 0;
+  while (entryIndex < historyEntries.length) {
+    let entry = historyEntries[entryIndex];
+    if (entry === null || entry === undefined) {
+      entry = {
+        ...fallbackMessageData,
+        index: entryIndex,
+      };
+    }
+    let className = "defined";
     if (entry === undefined || entry === null) {
-      templates.push($`<li class="unknown"> unknown history state</li>`);
-      continue;
+      className = "undefined";
     }
-    const { index, pathname, title, kind } = entry;
+    const { index } = entry;
     if (index === previousIndex) {
-      templates.push($`
-                <li class="current">
-                    <div>pathname: ${pathname}</div>
-                    <div>title: ${title}</div>
-                    <div>kind: ${kind}
-                </li>
-            `);
-      continue;
+      className = "current";
     }
+    const { pathname, title } = entry;
+    const entryDelta = entryIndex - previousIndex;
     templates.push($`
-            <li class="defined">
-                <div>pathname: ${pathname}</div>
-                <div>title: ${title}</div>
-                <div>kind: ${kind}
-            </li>
-        `);
+      <li class="${className}" @pointerdown=${() => history.go(entryDelta)}>
+        <div>${pathname}</div>
+        <div>${title}</div>
+      </li>
+    `);
+    entryIndex += 1;
   }
   return templates;
 };
 const styles1 = r`
     h3, div, ul, li {
-        box-sizing: border-box;
+      box-sizing: border-box;
     }
     h3 {
-        margin-top: 0;
+      margin-top: 0;
     }
     ul {
-        list-style-type: none;
-        padding-left: 0;
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li, input[type=button] {
+      cursor: pointer;
     }
 
     .container {
-        border: 1px solid #efefef;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+      border: 1px solid #efefef;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 70vh;
+      width: 50vw;
+      max-height: 600px;
+      max-width: 600px;
+      overflow: auto;
+    }
+
+    .unknown, .defined, .current {
+      border: 1px solid transparent;
     }
 
     .unknown {
-        color: #878787;
+      color: #878787;
     }
-    .unknown:hover {
-        background-color: #efefef;
-        outline: 1px solid #ababab;
+    .unknown:hover, .defined:hover {
+      background-color: #fcfcfc;
+      border: 1px solid #ababab;
     }
 
     .defined {
-        color: #434343;
+      color: #434343;
     }
     .defined:hover {
-        background-color: #efefef;
-        outline: 1px solid #565656;
+      border: 1px solid #565656;
     }
 
     .current {
-        color: ##1e5bbd;
-        outline: 1px solid #1e5bbd;
+      color: #1e5bbd;
+      background-color: #f5fbff;
     }
     .current:hover {
-        background-color: #e3eeff;
+      background-color: #e3eeff;
     }
 `;
 class DemoHistory extends s3 {
@@ -1150,13 +1180,13 @@ const urlData = {
   "/#/articles": "articles written by the author",
 };
 const styles11 = r`
-    .container {
-        border: 1px solid #efefef;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
+  .container {
+    border: 1px solid #efefef;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 `;
 class DemoMenu extends s3 {
   static styles = [
@@ -1164,17 +1194,17 @@ class DemoMenu extends s3 {
   ];
   render() {
     return $`
-            <div class="container">
-                <input type="button" name="/#/home" value="home" @pointerdown="${this.onPointerDown}">
-                <input type="button" name="/#/about" value="about"  @pointerdown="${this.onPointerDown}">
-                <input type="button" name="/#/projects" value="projects" @pointerdown="${this.onPointerDown}">
-                <input type="button" name="/#/articles" value="articles" @pointerdown="${this.onPointerDown}">
-            </div>
-        `;
+      <div class="container">
+        <input type="button" name="/#/home" value="home" @pointerdown="${this.onPointerDown}">
+        <input type="button" name="/#/about" value="about"  @pointerdown="${this.onPointerDown}">
+        <input type="button" name="/#/projects" value="projects" @pointerdown="${this.onPointerDown}">
+        <input type="button" name="/#/articles" value="articles" @pointerdown="${this.onPointerDown}">
+      </div>
+    `;
   }
-  onPointerDown(e7) {
-    if (!(e7.target instanceof HTMLInputElement)) return;
-    const { name } = e7.target;
+  onPointerDown(e8) {
+    if (!(e8.target instanceof HTMLInputElement)) return;
+    const { name } = e8.target;
     const title = urlData[name];
     pushEntry(name, title);
   }

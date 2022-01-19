@@ -1,9 +1,8 @@
-const DOMAIN = window.location.host;
-const URLBANG = `${DOMAIN}:urlbang`;
-const RECIEVER = `${DOMAIN}:urlbang__reciever`;
+const URLBANG = `/urlbang`;
+const RECEIVER = `/urlbang/receiver`;
 const PUSH = "push";
 const BACK = "back";
-const rc = new BroadcastChannel(RECIEVER);
+const rc = new BroadcastChannel(RECEIVER);
 const bc = new BroadcastChannel(URLBANG);
 const goBack = () =>
   rc.postMessage({
@@ -25,6 +24,6 @@ export {
   addListener as addListener,
   goBack as goBack,
   pushEntry as pushEntry,
-  RECIEVER as RECIEVER,
+  RECEIVER as RECEIVER,
   URLBANG as URLBANG,
 };

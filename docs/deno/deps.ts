@@ -21,9 +21,4 @@ export type {
   HistoryModifier,
   Listener,
 } from "../../v0.1/deno/urlbang.ts";
-export {
-  addListener,
-  goBack,
-  pushEntry,
-  URLBANG,
-} from "../../v0.1/deno/urlbang.ts";
+export { addListener, goBack, pushEntry } from "../../v0.1/deno/urlbang.ts";

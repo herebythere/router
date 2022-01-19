@@ -11,14 +11,14 @@ import {
   HASHCHANGE,
   HIDDEN,
   PUSH,
-  RECIEVER,
+  RECEIVER,
   URLBANG,
 } from "./urlbang.types.ts";
 
 // URLBang DOM
 //
 // This module can only be accessed with a message
-// through a Broadcast Channel.
+// through a Broadcast Channel at /urlbang/receiver
 
 type GetWindowPathname = () => string;
 type CreateHistoryEntry = (
@@ -29,10 +29,11 @@ type CreateHistoryEntry = (
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 
-const rc = new BroadcastChannel(RECIEVER);
+const rc = new BroadcastChannel(RECEIVER);
 const bc = new BroadcastChannel(URLBANG);
 
-let historyIndex = 0;
+let urlbangIndex = 0;
+let maxIndex = 0;
 
 const getWindowPathname: GetWindowPathname = () =>
   window.location.href.substring(window.origin.length);
@@ -49,7 +50,7 @@ const replaceHistoryEntry: CreateHistoryEntry = (kind, index) => {
     title,
   };
 
-  history.replaceState(state, document.title, pathname);
+  history.replaceState(state, title, pathname);
 
   return state;
 };
@@ -67,13 +68,11 @@ rc.addEventListener(
 
     let { pathname } = e.data;
     const currPathname = getWindowPathname();
-    if (pathname === currPathname) {
-      return;
-    }
+    if (pathname === currPathname) return;
 
-    historyIndex += 1;
+    urlbangIndex += 1;
     const { title, data } = e.data;
-    const state = { index: historyIndex, data, title, pathname, kind: PUSH };
+    const state = { index: urlbangIndex, kind: PUSH, data, title, pathname };
 
     history.pushState(state, title, pathname);
 
@@ -83,24 +82,24 @@ rc.addEventListener(
 
 window.addEventListener(POPSTATE, (e: PopStateEvent) => {
   if (e.state === null) {
-    historyIndex += 1;
+    urlbangIndex += 1;
   }
 
   const state: BroadcastMessageData = (e.state === null)
-    ? replaceHistoryEntry(HASHCHANGE, historyIndex)
+    ? replaceHistoryEntry(HASHCHANGE, urlbangIndex)
     : e.state;
 
-  historyIndex = state.index;
+  urlbangIndex = state.index;
 
   bc.postMessage(state);
 });
 
 window.addEventListener(PAGESHOW, (e: PageTransitionEvent) => {
   const state: BroadcastMessageData = (history.state === null)
-    ? replaceHistoryEntry(ENTRY, historyIndex)
+    ? replaceHistoryEntry(ENTRY, urlbangIndex)
     : history.state;
 
-  historyIndex = state.index;
+  urlbangIndex = state.index;
 
   bc.postMessage(state);
 });

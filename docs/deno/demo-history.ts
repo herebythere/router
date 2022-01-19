@@ -2,10 +2,7 @@
 
 import type { BroadcastMessageData, TemplateResult } from "./deps.ts";
 
-import { css, html, LitElement, URLBANG } from "./deps.ts";
-
-// this could be it's own implementation from URLBang
-// do we need history?
+import { css, html, LitElement } from "./deps.ts";
 
 type SubcriptionCallback = () => void;
 type Subcribe = (callback: SubcriptionCallback) => number;
@@ -13,30 +10,52 @@ type Unsubcribe = (receipt: number) => void;
 type Dispatch = () => void;
 type CreateTemplates = () => Array<TemplateResult>;
 
-const bc = new BroadcastChannel(URLBANG);
+interface RecordedHashchangeData {
+  kind: "recorded_change";
+  index: number;
+  title: string;
+  pathname: string;
+  data: unknown;
+}
 
-type HistoryKinds =
-  | "back"
-  | "forward"
-  | "skip_back"
-  | "skip_forward"
-  | "entry"
-  | "tail_entry";
+interface UnknownData {
+  kind: "unknown";
+  index: number;
+  title: string;
+  pathname: string;
+  data: unknown;
+}
 
-const BACK = "back";
-const FORWARD = "forward";
-const SKIP_BACK = "skip_back";
-const SKIP_FORWARD = "skip_forward";
-const ENTRY = "entry";
-const TAIL_ENTRY = "tail_entry";
+type HistoryMessageData =
+  | BroadcastMessageData
+  | RecordedHashchangeData
+  | UnknownData;
+
+// Intial values
+
+const URLBANG = "/urlbang";
+const RECEIVER = "/urlbang/receiver";
 const HIDDEN = "hidden";
 
+const fallbackMessageData: UnknownData = {
+  kind: "unknown",
+  index: -1,
+  title: "title unknown",
+  pathname: "pathname unknown",
+  data: undefined,
+};
+
+const bc = new BroadcastChannel(URLBANG);
+const rc = new BroadcastChannel(RECEIVER);
+
+// Stateful / Mutative entries
+
+const historyEntries: Array<HistoryMessageData | null> = [];
+let subscriptions: Array<SubcriptionCallback> = [];
 let previousIndex = 0;
-let direction: HistoryKinds | undefined;
+let maxIndex = 0;
 
-// add another type here for "tracked_hashchanges"
-
-const historyEntries: Array<BroadcastMessageData | null> = [];
+// Module functions
 
 bc.addEventListener(
   "message",
@@ -49,31 +68,34 @@ bc.addEventListener(
       historyEntries[index] = e.data;
     }
 
-    // manual hash change
-    // hashchange
+    if (
+      kind === "hashchange" && historyEntries[index]?.kind !== "recorded_change"
+    ) {
+      historyEntries[index] = { ...e.data, kind: "recorded_change" };
+      historyEntries.splice(index + 1);
+    }
 
-    const indexDelta = index - previousIndex;
-    console.log("index delta:", indexDelta);
-
-    // entry splice logic
-
-    // if -1, forward
-    // if 1, back
-
-    // if < -1, jump backward
-    // if > 1, jump forward
-    //
+    maxIndex = Math.max(index, maxIndex);
+    console.log("maxindex:", maxIndex);
 
     previousIndex = index;
 
-    console.log(index, kind);
-    console.log(historyEntries);
     dispatch();
   },
 );
 
-let subscriptions: Array<SubcriptionCallback> = [];
-// pub sub
+rc.addEventListener(
+  "message",
+  (e: MessageEvent<BroadcastMessageData>) => {
+    if (document.visibilityState === HIDDEN) return;
+
+    const { kind } = e.data;
+    if (kind === "push" && previousIndex !== maxIndex) {
+      historyEntries.splice(previousIndex + 1);
+    }
+  },
+);
+
 const subscribe: Subcribe = (callback: SubcriptionCallback) => {
   subscriptions.push(callback);
   return subscriptions.length - 1;
@@ -98,38 +120,35 @@ const dispatch: Dispatch = () => {
   }
 };
 
-// webcomponent render
-
 const createHistoryListItems: CreateTemplates = () => {
-  // unknown
-  // current
-  // defined
   const templates = [];
-  for (const entry of historyEntries) {
-    if (entry === undefined || entry === null) {
-      templates.push(html`<li class="unknown"> unknown history state</li>`);
-      continue;
+  let entryIndex = 0;
+  while (entryIndex < historyEntries.length) {
+    let entry = historyEntries[entryIndex];
+    if (entry === null || entry === undefined) {
+      entry = { ...fallbackMessageData, index: entryIndex };
     }
 
-    const { index, pathname, title, kind } = entry;
-    if (index === previousIndex) {
-      templates.push(html`
-                <li class="current">
-                    <div>pathname: ${pathname}</div>
-                    <div>title: ${title}</div>
-                    <div>kind: ${kind}
-                </li>
-            `);
-      continue;
+    let className = "defined";
+    if (entry === undefined || entry === null) {
+      className = "undefined";
     }
+    const { index } = entry;
+    if (index === previousIndex) {
+      className = "current";
+    }
+
+    const { pathname, title } = entry;
+    const entryDelta = entryIndex - previousIndex;
 
     templates.push(html`
-            <li class="defined">
-                <div>pathname: ${pathname}</div>
-                <div>title: ${title}</div>
-                <div>kind: ${kind}
-            </li>
-        `);
+      <li class="${className}" @pointerdown=${() => history.go(entryDelta)}>
+        <div>${pathname}</div>
+        <div>${title}</div>
+      </li>
+    `);
+
+    entryIndex += 1;
   }
 
   return templates;
@@ -137,46 +156,56 @@ const createHistoryListItems: CreateTemplates = () => {
 
 const styles = css`
     h3, div, ul, li {
-        box-sizing: border-box;
+      box-sizing: border-box;
     }
     h3 {
-        margin-top: 0;
+      margin-top: 0;
     }
     ul {
-        list-style-type: none;
-        padding-left: 0;
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li, input[type=button] {
+      cursor: pointer;
     }
 
     .container {
-        border: 1px solid #efefef;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+      border: 1px solid #efefef;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 70vh;
+      width: 50vw;
+      max-height: 600px;
+      max-width: 600px;
+      overflow: auto;
+    }
+
+    .unknown, .defined, .current {
+      border: 1px solid transparent;
     }
 
     .unknown {
-        color: #878787;
+      color: #878787;
     }
-    .unknown:hover {
-        background-color: #efefef;
-        outline: 1px solid #ababab;
+    .unknown:hover, .defined:hover {
+      background-color: #fcfcfc;
+      border: 1px solid #ababab;
     }
 
     .defined {
-        color: #434343;
+      color: #434343;
     }
     .defined:hover {
-        background-color: #efefef;
-        outline: 1px solid #565656;
+      border: 1px solid #565656;
     }
 
     .current {
-        color: ##1e5bbd;
-        outline: 1px solid #1e5bbd;
+      color: #1e5bbd;
+      background-color: #f5fbff;
     }
     .current:hover {
-        background-color: #e3eeff;
+      background-color: #e3eeff;
     }
 `;
 

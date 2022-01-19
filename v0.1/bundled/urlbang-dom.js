@@ -1,6 +1,5 @@
-const DOMAIN = window.location.host;
-const URLBANG = `${DOMAIN}:urlbang`;
-const RECIEVER = `${DOMAIN}:urlbang__reciever`;
+const URLBANG = `/urlbang`;
+const RECEIVER = `/urlbang/receiver`;
 const PUSH = "push";
 const BACK = "back";
 const HIDDEN = "hidden";
@@ -8,9 +7,9 @@ const HASHCHANGE = "hashchange";
 const ENTRY = "entry";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
-const rc = new BroadcastChannel(RECIEVER);
+const rc = new BroadcastChannel(RECEIVER);
 const bc = new BroadcastChannel(URLBANG);
-let historyIndex = 0;
+let urlbangIndex = 0;
 const getWindowPathname = () =>
   window.location.href.substring(window.origin.length);
 const replaceHistoryEntry = (kind, index) => {
@@ -23,7 +22,7 @@ const replaceHistoryEntry = (kind, index) => {
     pathname,
     title,
   };
-  history.replaceState(state, document.title, pathname);
+  history.replaceState(state, title, pathname);
   return state;
 };
 rc.addEventListener("message", (e) => {
@@ -35,35 +34,33 @@ rc.addEventListener("message", (e) => {
   }
   let { pathname } = e.data;
   const currPathname = getWindowPathname();
-  if (pathname === currPathname) {
-    return;
-  }
-  historyIndex += 1;
+  if (pathname === currPathname) return;
+  urlbangIndex += 1;
   const { title, data } = e.data;
   const state = {
-    index: historyIndex,
+    index: urlbangIndex,
+    kind: PUSH,
     data,
     title,
     pathname,
-    kind: PUSH,
   };
   history.pushState(state, title, pathname);
   bc.postMessage(state);
 });
 window.addEventListener(POPSTATE, (e) => {
   if (e.state === null) {
-    historyIndex += 1;
+    urlbangIndex += 1;
   }
   const state = e.state === null
-    ? replaceHistoryEntry(HASHCHANGE, historyIndex)
+    ? replaceHistoryEntry(HASHCHANGE, urlbangIndex)
     : e.state;
-  historyIndex = state.index;
+  urlbangIndex = state.index;
   bc.postMessage(state);
 });
 window.addEventListener(PAGESHOW, (e) => {
   const state = history.state === null
-    ? replaceHistoryEntry(ENTRY, historyIndex)
+    ? replaceHistoryEntry(ENTRY, urlbangIndex)
     : history.state;
-  historyIndex = state.index;
+  urlbangIndex = state.index;
   bc.postMessage(state);
 });

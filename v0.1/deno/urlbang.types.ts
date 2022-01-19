@@ -18,16 +18,15 @@ type DispatchMessage<D = unknown> =
   | PopMessage
   | PushMessage<D>;
 
-type HistoryModifier = "push" | "hashchange" | "entry";
+type HistoryModifier = "push" | "hashchange" | "entry" | "branch";
 
 type BroadcastMessageData<D = unknown> = {
   index: number;
   kind: HistoryModifier;
 } & MessageParams<D>;
 
-const DOMAIN = window.location.host;
-const URLBANG = `${DOMAIN}:urlbang`;
-const RECIEVER = `${DOMAIN}:urlbang__reciever`;
+const URLBANG = `/urlbang`;
+const RECEIVER = `/urlbang/receiver`;
 const PUSH = "push";
 const FORWARD = "forward";
 const BACK = "back";
@@ -42,4 +41,4 @@ export type {
   PushMessage,
 };
 
-export { BACK, ENTRY, FORWARD, HASHCHANGE, HIDDEN, PUSH, RECIEVER, URLBANG };
+export { BACK, ENTRY, FORWARD, HASHCHANGE, HIDDEN, PUSH, RECEIVER, URLBANG };
