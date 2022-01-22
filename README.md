@@ -1,6 +1,7 @@
 # URLBang
 
-A ridiculously concise SPA router. Checkout the [demo](https://taylor-vann.github.io/urlbang/).
+A ridiculously concise SPA router. Checkout the
+[demo](https://taylor-vann.github.io/urlbang/).
 
 ## Abstract
 
