@@ -25,18 +25,18 @@ const replaceHistoryEntry = (kind, index) => {
   history.replaceState(state, title, pathname);
   return state;
 };
-rc.addEventListener("message", (e3) => {
+rc.addEventListener("message", (e4) => {
   if (document.visibilityState === HIDDEN) return;
-  const { kind } = e3.data;
+  const { kind } = e4.data;
   if (kind === BACK) {
     history.back();
     return;
   }
-  let { pathname } = e3.data;
+  let { pathname } = e4.data;
   const currPathname = getWindowPathname();
   if (pathname === currPathname) return;
   urlbangIndex += 1;
-  const { title, data } = e3.data;
+  const { title, data } = e4.data;
   const state = {
     index: urlbangIndex,
     kind: PUSH,
@@ -47,13 +47,13 @@ rc.addEventListener("message", (e3) => {
   history.pushState(state, title, pathname);
   bc.postMessage(state);
 });
-window.addEventListener(POPSTATE, (e4) => {
-  if (e4.state === null) {
+window.addEventListener(POPSTATE, (e5) => {
+  if (e5.state === null) {
     urlbangIndex += 1;
   }
-  const state = e4.state === null
+  const state = e5.state === null
     ? replaceHistoryEntry(HASHCHANGE, urlbangIndex)
-    : e4.state;
+    : e5.state;
   urlbangIndex = state.index;
   bc.postMessage(state);
 });
@@ -952,17 +952,17 @@ class s3 extends a {
       this._$Dt = void 0;
   }
   createRenderRoot() {
-    var t25, e5;
-    const i2 = super.createRenderRoot();
-    return (t25 = (e5 = this.renderOptions).renderBefore) !== null &&
-        t25 !== void 0 || (e5.renderBefore = i2.firstChild),
-      i2;
+    var t25, e6;
+    const i3 = super.createRenderRoot();
+    return (t25 = (e6 = this.renderOptions).renderBefore) !== null &&
+        t25 !== void 0 || (e6.renderBefore = i3.firstChild),
+      i3;
   }
   update(t26) {
-    const i3 = this.render();
+    const i4 = this.render();
     this.hasUpdated || (this.renderOptions.isConnected = this.isConnected),
       super.update(t26),
-      this._$Dt = x(i3, this.renderRoot, this.renderOptions);
+      this._$Dt = x(i4, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     var t27;
@@ -991,6 +991,36 @@ n3 == null || n3({
 ((o3 = globalThis.litElementVersions) !== null && o3 !== void 0
   ? o3
   : globalThis.litElementVersions = []).push("3.1.1");
+const i2 = (i21, e211) =>
+  e211.kind === "method" && e211.descriptor && !("value" in e211.descriptor)
+    ? {
+      ...e211,
+      finisher(n4) {
+        n4.createProperty(e211.key, i21);
+      },
+    }
+    : {
+      kind: "field",
+      key: Symbol(),
+      placement: "own",
+      descriptor: {},
+      originalKey: e211.key,
+      initializer() {
+        typeof e211.initializer == "function" &&
+          (this[e211.key] = e211.initializer.call(this));
+      },
+      finisher(n5) {
+        n5.createProperty(e211.key, i21);
+      },
+    };
+function e3(e212) {
+  return (n6, t29) =>
+    t29 !== void 0
+      ? ((i22, e31, n27) => {
+        e31.constructor.createProperty(n27, i22);
+      })(e212, n6, t29)
+      : i2(e212, n6);
+}
 const rc1 = new BroadcastChannel(RECEIVER);
 new BroadcastChannel(URLBANG);
 const pushEntry = (pathname, title, params) => {
@@ -1017,17 +1047,17 @@ const historyEntries = [];
 let subscriptions = [];
 let previousIndex = 0;
 let maxIndex = 0;
-bc1.addEventListener("message", (e6) => {
+bc1.addEventListener("message", (e7) => {
   if (document.visibilityState === HIDDEN1) return;
-  const { index, kind } = e6.data;
+  const { index, kind } = e7.data;
   if (historyEntries[index] === undefined) {
-    historyEntries[index] = e6.data;
+    historyEntries[index] = e7.data;
   }
   if (
     kind === "hashchange" && historyEntries[index]?.kind !== "recorded_change"
   ) {
     historyEntries[index] = {
-      ...e6.data,
+      ...e7.data,
       kind: "recorded_change",
     };
     historyEntries.splice(index + 1);
@@ -1037,9 +1067,9 @@ bc1.addEventListener("message", (e6) => {
   previousIndex = index;
   dispatch();
 });
-rc2.addEventListener("message", (e7) => {
+rc2.addEventListener("message", (e8) => {
   if (document.visibilityState === HIDDEN1) return;
-  const { kind } = e7.data;
+  const { kind } = e8.data;
   if (kind === "push" && previousIndex !== maxIndex) {
     historyEntries.splice(previousIndex + 1);
   }
@@ -1173,6 +1203,47 @@ class DemoHistory extends s3 {
   }
 }
 customElements.define("demo-history", DemoHistory);
+function _applyDecoratedDescriptor(
+  target,
+  property,
+  decorators,
+  descriptor,
+  context,
+) {
+  var desc1 = {};
+  Object.keys(descriptor).forEach(function (key) {
+    desc1[key] = descriptor[key];
+  });
+  desc1.enumerable = !!desc1.enumerable;
+  desc1.configurable = !!desc1.configurable;
+  if ("value" in desc1 || desc1.initializer) {
+    desc1.writable = true;
+  }
+  desc1 = decorators.slice().reverse().reduce(function (desc, decorator) {
+    return decorator ? decorator(target, property, desc) || desc : desc;
+  }, desc1);
+  if (context && desc1.initializer !== void 0) {
+    desc1.value = desc1.initializer ? desc1.initializer.call(context) : void 0;
+    desc1.initializer = undefined;
+  }
+  if (desc1.initializer === void 0) {
+    Object.defineProperty(target, property, desc1);
+    desc1 = null;
+  }
+  return desc1;
+}
+function _initializerDefineProperty(target, property, descriptor, context) {
+  if (!descriptor) return;
+  Object.defineProperty(target, property, {
+    enumerable: descriptor.enumerable,
+    configurable: descriptor.configurable,
+    writable: descriptor.writable,
+    value: descriptor.initializer
+      ? descriptor.initializer.call(context)
+      : void 0,
+  });
+}
+var _class, _descriptor, _dec;
 const urlData = {
   "/#/home": "home page",
   "/#/about": "about this page",
@@ -1188,25 +1259,50 @@ const styles11 = r`
     gap: 20px;
   }
 `;
-class DemoMenu extends s3 {
+let DemoMenu = ((_class = class DemoMenu extends s3 {
   static styles = [
     styles11,
   ];
   render() {
+    const { path } = this;
+    const home = path + "/#/home";
+    const about = path + "/#/about";
+    const projects = path + "/#/projects";
+    const articles = path + "/#/articles";
     return $`
       <div class="container">
-        <input type="button" name="/#/home" value="home" @pointerdown="${this.onPointerDown}">
-        <input type="button" name="/#/about" value="about"  @pointerdown="${this.onPointerDown}">
-        <input type="button" name="/#/projects" value="projects" @pointerdown="${this.onPointerDown}">
-        <input type="button" name="/#/articles" value="articles" @pointerdown="${this.onPointerDown}">
+        <input type="button" name="${home}" value="home" @pointerdown="${this.onPointer}">
+        <input type="button" name="${about}" value="about"  @pointerdown="${this.onPointer}">
+        <input type="button" name="${projects}" value="projects" @pointerdown="${this.onPointer}">
+        <input type="button" name="${articles}" value="articles" @pointerdown="${this.onPointer}">
       </div>
     `;
   }
-  onPointerDown(e8) {
-    if (!(e8.target instanceof HTMLInputElement)) return;
-    const { name } = e8.target;
-    const title = urlData[name];
+  onPointer(e9) {
+    if (!(e9.target instanceof HTMLInputElement)) return;
+    const { path } = this;
+    const { name } = e9.target;
+    const nameWithoutPrefix = name.substring(path.length);
+    const title = urlData[nameWithoutPrefix];
     pushEntry(name, title);
   }
-}
+  constructor(...args) {
+    super(...args);
+    _initializerDefineProperty(this, "path", _descriptor, this);
+  }
+}) || _class,
+  _dec = e3({
+    kind: String,
+  }),
+  _descriptor = _applyDecoratedDescriptor(_class.prototype, "path", [
+    _dec,
+  ], {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    initializer: function () {
+      return "";
+    },
+  }),
+  _class);
 customElements.define("demo-menu", DemoMenu);

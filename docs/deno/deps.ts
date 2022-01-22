@@ -12,9 +12,11 @@
 
 import "../../v0.1/deno/urlbang-dom.ts";
 
+export type { TemplateResult } from "https://cdn.skypack.dev/lit?dts";
+
 // @deno-types="https://cdn.skypack.dev/lit?dts"
 export { css, html, LitElement } from "https://cdn.skypack.dev/lit";
-export type { TemplateResult } from "https://cdn.skypack.dev/lit?dts";
+export { property } from "https://cdn.skypack.dev/lit/decorators";
 
 export type {
   BroadcastMessageData,
