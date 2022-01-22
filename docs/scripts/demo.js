@@ -491,9 +491,11 @@ const i1 = globalThis.trustedTypes,
   T = new WeakMap(),
   x = (t2, i2, s22) => {
     var e21, o21;
-    const n21 =
-      (e21 = s22 == null ? void 0 : s22.renderBefore) !== null && e21 !== void 0
-        ? e21 : i2;
+    const n21 = (e21 = s22 == null
+            ? void 0
+            : s22.renderBefore) !== null && e21 !== void 0
+      ? e21
+      : i2;
     let l2 = n21._$litPart$;
     if (l2 === void 0) {
       const t3 = (o21 = s22 == null
@@ -537,7 +539,11 @@ const i1 = globalThis.trustedTypes,
               ? p2 = -2
               : (p2 = d2.lastIndex - u3[2].length,
                 o3 = u3[1],
-                d2 = u3[3] === void 0 ? f : u3[3] === '"' ? m : _)
+                d2 = u3[3] === void 0
+                  ? f
+                  : u3[3] === '"'
+                  ? m
+                  : _)
             : d2 === m || d2 === _
             ? d2 = f
             : d2 === v || d2 === a1
@@ -679,11 +685,10 @@ class V {
   p(t2) {
     var i2;
     const { el: { content: s27 }, parts: e23 } = this._$AD,
-      o24 = ((i2 = t2 == null
-              ? void 0
-              : t2.creationScope) !== null && i2 !== void 0
-        ? i2
-        : l1).importNode(s27, true);
+      o24 =
+        ((i2 = t2 == null ? void 0 : t2.creationScope) !== null && i2 !== void 0
+          ? i2
+          : l1).importNode(s27, true);
     A.currentNode = o24;
     let n24 = A.nextNode(), h2 = 0, r2 = 0, d2 = e23[0];
     for (; d2 !== void 0;) {
