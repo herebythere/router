@@ -33,7 +33,6 @@ const rc = new BroadcastChannel(RECEIVER);
 const bc = new BroadcastChannel(URLBANG);
 
 let urlbangIndex = 0;
-let maxIndex = 0;
 
 const getWindowPathname: GetWindowPathname = () =>
   window.location.href.substring(window.origin.length);
