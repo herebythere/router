@@ -1,32 +1,79 @@
 // brian taylor vann
+// router
 
-import type { BroadcastMessageData, HistoryModifier } from "./urlbang.types.ts";
-import { BACK, PUSH, RECEIVER, URLBANG } from "./urlbang.types.ts";
+// This implementation leverages a browser's History API.
+// The History API functions as a store of sorts.
+//
+// Rather than maintaining our own state, the histry api
+// will be the store in the larger "router" pattern
 
-type PushEntry<P = unknown> = (url: string, title: string, params?: P) => void;
-type GoBack = () => void;
-type Listener<P = unknown> = (
-  e: MessageEvent<BroadcastMessageData<P>>,
-) => void;
-type RemoveListener = () => void;
-type AddListener<P = unknown> = (
-  listener: Listener<P>,
-) => RemoveListener;
+import type {
+  BroadcastMessage,
+  DispatchMessage,
+  HistoryModifier,
+  RouterContext,
+  Subscription,
+} from "./urlbang_types.ts";
 
-const rc = new BroadcastChannel(RECEIVER);
-const bc = new BroadcastChannel(URLBANG);
+import {
+  ENTRY,
+  HASHCHANGE,
+  PAGESHOW,
+  POPSTATE,
+  replaceHistoryEntry,
+} from "./utils.ts";
+import { reactions } from "./urlbang_actions.ts";
 
-const goBack: GoBack = () => rc.postMessage({ kind: BACK });
-const pushEntry: PushEntry = (pathname, title, params) => {
-  rc.postMessage({ kind: PUSH, pathname, title, params });
-};
+class Router<D = unknown> {
+  private ctx: RouterContext<BroadcastMessage<D>, DispatchMessage<D>>;
 
-const addListener: AddListener = (listener) => {
-  bc.addEventListener("message", listener);
+  constructor(subscription: Subscription<BroadcastMessage<D>>) {
+    this.ctx = {
+      reactions,
+      subscription,
+    };
 
-  return () => bc.removeEventListener("message", listener);
-};
+    this.connect();
+  }
 
-export type { BroadcastMessageData, HistoryModifier, Listener };
+  private connect() {
+    window.addEventListener(PAGESHOW, this.onPageShow);
+    window.addEventListener(POPSTATE, this.onPopState);
+  }
 
-export { addListener, goBack, pushEntry, RECEIVER, URLBANG };
+  disconnect() {
+    window.removeEventListener(PAGESHOW, this.onPageShow);
+    window.removeEventListener(POPSTATE, this.onPopState);
+  }
+
+  dispatch(action: DispatchMessage<D>) {
+    const reaction = this.ctx.reactions[action.type];
+    if (reaction === undefined) {
+      return;
+    }
+
+    reaction(action);
+
+    this.ctx.subscription(history.state);
+  }
+
+  private onPageShow(e: PageTransitionEvent) {
+    if (history.state === null) {
+      replaceHistoryEntry(ENTRY);
+    }
+
+    this.ctx.subscription(history.state);
+  }
+
+  private onPopState(e: PopStateEvent) {
+    if (e.state === null) {
+      replaceHistoryEntry(HASHCHANGE);
+    }
+
+    this.ctx.subscription(history.state);
+  }
+}
+
+export type { BroadcastMessage, HistoryModifier };
+
+export { Router };
