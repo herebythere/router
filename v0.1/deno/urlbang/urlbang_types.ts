@@ -11,18 +11,21 @@ interface MessageParams<D> {
 }
 
 interface PopMessage {
-  type: "back";
+  type: "router__back";
 }
 
 type PushMessage<D = unknown> = {
-  type: "push";
+  type: "router__push";
 } & MessageParams<D>;
 
 type DispatchMessage<D = unknown> =
   | PopMessage
   | PushMessage<D>;
 
-type HistoryModifier = "push" | "hash_change" | "personal_entry" | "branch";
+type HistoryModifier =
+  | "router__push"
+  | "router__hash_change"
+  | "router__personal_entry";
 
 type BroadcastMessage<D = unknown> = {
   type: HistoryModifier;

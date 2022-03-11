@@ -16,9 +16,9 @@ import type {
 } from "./urlbang_types.ts";
 
 import {
-  ENTRY,
-  HASHCHANGE,
+  HASH_CHANGE,
   PAGESHOW,
+  PERSONAL_ENTRY,
   POPSTATE,
   replaceHistoryEntry,
 } from "./utils.ts";
@@ -59,7 +59,7 @@ class Router<D = unknown> {
 
   private onPageShow(e: PageTransitionEvent) {
     if (history.state === null) {
-      replaceHistoryEntry(ENTRY);
+      replaceHistoryEntry(PERSONAL_ENTRY);
     }
 
     this.ctx.subscription(history.state);
@@ -67,13 +67,11 @@ class Router<D = unknown> {
 
   private onPopState(e: PopStateEvent) {
     if (e.state === null) {
-      replaceHistoryEntry(HASHCHANGE);
+      replaceHistoryEntry(HASH_CHANGE);
     }
 
     this.ctx.subscription(history.state);
   }
 }
-
-export type { BroadcastMessage, HistoryModifier };
 
 export { Router };

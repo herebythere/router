@@ -1,11 +1,10 @@
 import type { BroadcastMessage, HistoryModifier } from "./urlbang_types.ts";
 
-const PUSH = "push";
-const FORWARD = "forward";
-const BACK = "back";
+const PUSH = "router__push";
+const BACK = "router__back";
 const HIDDEN = "hidden";
-const HASHCHANGE = "hash_change";
-const ENTRY = "personal_entry";
+const HASH_CHANGE = "router__hash_change";
+const PERSONAL_ENTRY = "router__personal_entry";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 
@@ -29,12 +28,11 @@ function replaceHistoryEntry<D>(type: HistoryModifier) {
 
 export {
   BACK,
-  ENTRY,
-  FORWARD,
   getWindowPathname,
-  HASHCHANGE,
+  HASH_CHANGE,
   HIDDEN,
   PAGESHOW,
+  PERSONAL_ENTRY,
   POPSTATE,
   PUSH,
   replaceHistoryEntry,

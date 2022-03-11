@@ -1,7 +1,7 @@
 const PUSH = "router__push";
 const BACK = "router__back";
-const HASHCHANGE = "router__hash_change";
-const ENTRY = "router__personal_entry";
+const HASH_CHANGE = "router__hash_change";
+const PERSONAL_ENTRY = "router__personal_entry";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 function getWindowPathname() {
@@ -68,15 +68,20 @@ class Router {
   }
   onPageShow(e) {
     if (history.state === null) {
-      replaceHistoryEntry(ENTRY);
+      replaceHistoryEntry(PERSONAL_ENTRY);
     }
     this.ctx.subscription(history.state);
   }
   onPopState(e) {
     if (e.state === null) {
-      replaceHistoryEntry(HASHCHANGE);
+      replaceHistoryEntry(HASH_CHANGE);
     }
     this.ctx.subscription(history.state);
   }
 }
 export { Router as Router };
+export {
+  HASH_CHANGE as HASH_CHANGE,
+  PERSONAL_ENTRY as PERSONAL_ENTRY,
+  PUSH as PUSH,
+};

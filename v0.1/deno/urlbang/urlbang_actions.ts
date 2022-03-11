@@ -1,15 +1,15 @@
 import type { DispatchMessage } from "./urlbang_types.ts";
 
-import { getWindowPathname } from "./utils.ts";
+import { BACK, getWindowPathname, PUSH } from "./utils.ts";
 
 function back<D>(action: DispatchMessage<D>) {
-  if (action.type !== "back") return;
+  if (action.type !== BACK) return;
   history.back();
 }
 
 function push<D>(action: DispatchMessage<D>) {
   const { type } = action;
-  if (type !== "push") return;
+  if (type !== PUSH) return;
 
   const { pathname } = action;
   const currPathname = getWindowPathname();
