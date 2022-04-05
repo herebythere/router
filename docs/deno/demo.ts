@@ -1,4 +1,6 @@
 // components
 
-import "./demo-history.ts";
+import "./router.ts";
 import "./demo-menu.ts";
+
+import "./demo-history.ts";

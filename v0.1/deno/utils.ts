@@ -1,10 +1,9 @@
-import type { BroadcastMessage, HistoryModifier } from "./urlbang_types.ts";
+import type { BroadcastMessage, HistoryModifier } from "./router_types.ts";
 
-const PUSH = "router__push";
-const BACK = "router__back";
+const PUSH = "router_push";
+const BACK = "router_back";
 const HIDDEN = "hidden";
-const HASH_CHANGE = "router__hash_change";
-const PERSONAL_ENTRY = "router__personal_entry";
+const HASH_CHANGE = "router_hash_change";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 
@@ -32,7 +31,6 @@ export {
   HASH_CHANGE,
   HIDDEN,
   PAGESHOW,
-  PERSONAL_ENTRY,
   POPSTATE,
   PUSH,
   replaceHistoryEntry,

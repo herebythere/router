@@ -1,26 +1,14 @@
 // Imports / side effects
 
-// Deno required some kind of ordering
-//
-// 1 only deno types (must be separated by a full line \n)
-// 2 imports with side effects
-// 3 imports with deno types (must be separated by a full line \n)
-// 4 exports with deno types (must be separated by a full line \n)
-// 5 exports
+import "https://cdn.skypack.dev/trusted-types?dts";
 
-// @deno-types="https://cdn.skypack.dev/trusted-types?dts";
-
-import "../../v0.1/deno/urlbang-dom.ts";
-
+export type { BroadcastMessage, DispatchMessage } from "../../v0.1/deno/mod.ts";
 export type { TemplateResult } from "https://cdn.skypack.dev/lit?dts";
 
 // @deno-types="https://cdn.skypack.dev/lit?dts"
 export { css, html, LitElement } from "https://cdn.skypack.dev/lit";
-export { property } from "https://cdn.skypack.dev/lit/decorators";
-
-export type {
-  BroadcastMessageData,
-  HistoryModifier,
-  Listener,
-} from "../../v0.1/deno/urlbang.ts";
-export { addListener, goBack, pushEntry } from "../../v0.1/deno/urlbang.ts";
+export {
+  customElement,
+  property,
+} from "https://cdn.skypack.dev/lit/decorators";
+export { HASH_CHANGE, PUSH, Router } from "../../v0.1/deno/mod.ts";

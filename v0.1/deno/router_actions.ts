@@ -1,4 +1,4 @@
-import type { DispatchMessage } from "./urlbang_types.ts";
+import type { DispatchMessage } from "./router_types.ts";
 
 import { BACK, getWindowPathname, PUSH } from "./utils.ts";
 
@@ -12,8 +12,7 @@ function push<D>(action: DispatchMessage<D>) {
   if (type !== PUSH) return;
 
   const { pathname } = action;
-  const currPathname = getWindowPathname();
-  if (pathname === currPathname) return;
+  if (pathname === getWindowPathname()) return;
 
   const { title, data } = action;
 
@@ -22,8 +21,8 @@ function push<D>(action: DispatchMessage<D>) {
 }
 
 const reactions = {
-  back,
-  push,
+  router_back: back,
+  router_push: push,
 };
 
 export { reactions };

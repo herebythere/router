@@ -1,6 +1,7 @@
 // brian taylor vann
 
-import type { BroadcastMessageData, TemplateResult } from "./deps.ts";
+import { customElement } from "./deps.ts";
+import type { BroadcastMessage, TemplateResult } from "./deps.ts";
 
 import { css, html, LitElement } from "./deps.ts";
 
@@ -10,43 +11,44 @@ type Unsubcribe = (receipt: number) => void;
 type Dispatch = () => void;
 type CreateTemplates = () => Array<TemplateResult>;
 
-interface RecordedHashchangeData {
-  kind: "recorded_change";
+interface IndexData {
   index: number;
+}
+
+interface RecordedHashchangeData {
+  type: "recorded_change";
   title: string;
   pathname: string;
-  data: unknown;
+  data?: IndexData;
 }
 
 interface UnknownData {
-  kind: "unknown";
-  index: number;
+  type: "unknown";
   title: string;
   pathname: string;
-  data: unknown;
+  data?: IndexData;
 }
 
 type HistoryMessageData =
-  | BroadcastMessageData
+  | BroadcastMessage
   | RecordedHashchangeData
   | UnknownData;
 
 // Intial values
 
-const URLBANG = "/urlbang";
-const RECEIVER = "/urlbang/receiver";
 const HIDDEN = "hidden";
 
 const fallbackMessageData: UnknownData = {
-  kind: "unknown",
-  index: -1,
+  type: "unknown",
   title: "title unknown",
   pathname: "pathname unknown",
-  data: undefined,
+  data: {
+    index: -1,
+  },
 };
 
-const bc = new BroadcastChannel(URLBANG);
-const rc = new BroadcastChannel(RECEIVER);
+const bc = new BroadcastChannel("router-demo");
+const rc = new BroadcastChannel("router-demo-dispatch");
 
 // Stateful / Mutative entries
 
@@ -59,19 +61,22 @@ let maxIndex = 0;
 
 bc.addEventListener(
   "message",
-  (e: MessageEvent<BroadcastMessageData>) => {
+  (e: MessageEvent<BroadcastMessage<IndexData>>) => {
     if (document.visibilityState === HIDDEN) return;
 
-    const { index, kind } = e.data;
+    const { data } = e.data;
 
+    const index = data?.index ?? -1;
     if (historyEntries[index] === undefined) {
       historyEntries[index] = e.data;
     }
 
+    const { type } = e.data;
     if (
-      kind === "hashchange" && historyEntries[index]?.kind !== "recorded_change"
+      type === "router_hash_change" &&
+      historyEntries[index]?.type !== "recorded_change"
     ) {
-      historyEntries[index] = { ...e.data, kind: "recorded_change" };
+      historyEntries[index] = { ...e.data, type: "recorded_change" };
       historyEntries.splice(index + 1);
     }
 
@@ -80,79 +85,80 @@ bc.addEventListener(
 
     previousIndex = index;
 
-    dispatch();
+    // dispatch();
   },
 );
 
 rc.addEventListener(
   "message",
-  (e: MessageEvent<BroadcastMessageData>) => {
+  (e: MessageEvent<BroadcastMessage>) => {
     if (document.visibilityState === HIDDEN) return;
+    console.log("router-dispatch:", e);
 
-    const { kind } = e.data;
-    if (kind === "push" && previousIndex !== maxIndex) {
+    const { type } = e.data;
+    if (type === "router_push" && previousIndex !== maxIndex) {
       historyEntries.splice(previousIndex + 1);
     }
   },
 );
 
-const subscribe: Subcribe = (callback: SubcriptionCallback) => {
-  subscriptions.push(callback);
-  return subscriptions.length - 1;
-};
+// const subscribe: Subcribe = (callback: SubcriptionCallback) => {
+//   subscriptions.push(callback);
+//   return subscriptions.length - 1;
+// };
 
-const unsubscribe: Unsubcribe = (receipt) => {
-  const updatedSubscriptions = [];
-  const receiptNum = receipt.toString();
-  for (const index in subscriptions) {
-    if (receiptNum === index) {
-      continue;
-    }
-    updatedSubscriptions.push(subscriptions[index]);
-  }
+// const unsubscribe: Unsubcribe = (receipt) => {
+//   const updatedSubscriptions = [];
+//   const receiptNum = receipt.toString();
+//   for (const index in subscriptions) {
+//     if (receiptNum === index) {
+//       continue;
+//     }
+//     updatedSubscriptions.push(subscriptions[index]);
+//   }
 
-  subscriptions = updatedSubscriptions;
-};
+//   subscriptions = updatedSubscriptions;
+// };
 
-const dispatch: Dispatch = () => {
-  for (const subscription of subscriptions) {
-    subscription();
-  }
-};
+// const dispatch: Dispatch = () => {
+//   for (const subscription of subscriptions) {
+//     subscription();
+//   }
+// };
 
-const createHistoryListItems: CreateTemplates = () => {
-  const templates = [];
-  let entryIndex = 0;
-  while (entryIndex < historyEntries.length) {
-    let entry = historyEntries[entryIndex];
-    if (entry === null || entry === undefined) {
-      entry = { ...fallbackMessageData, index: entryIndex };
-    }
+// const createHistoryListItems: CreateTemplates = () => {
+//   const templates = [];
+//   let entryIndex = 0;
+//   while (entryIndex < historyEntries.length) {
+//     let entry = historyEntries[entryIndex];
+//     if (entry === null || entry === undefined) {
+//       entry = { ...fallbackMessageData, index: entryIndex };
+//     }
 
-    let className = "defined";
-    if (entry === undefined || entry === null) {
-      className = "undefined";
-    }
-    const { index } = entry;
-    if (index === previousIndex) {
-      className = "current";
-    }
+//     let className = "defined";
+//     if (entry === undefined || entry === null) {
+//       className = "undefined";
+//     }
+//     const { index } = entry;
+//     if (index === previousIndex) {
+//       className = "current";
+//     }
 
-    const { pathname, title } = entry;
-    const entryDelta = entryIndex - previousIndex;
+//     const { pathname, title } = entry;
+//     const entryDelta = entryIndex - previousIndex;
 
-    templates.push(html`
-      <li class="${className}" @pointerdown=${() => history.go(entryDelta)}>
-        <div>${pathname}</div>
-        <div>${title}</div>
-      </li>
-    `);
+//     templates.push(html`
+//       <li class="${className}" @pointerdown=${() => history.go(entryDelta)}>
+//         <div>${pathname}</div>
+//         <div>${title}</div>
+//       </li>
+//     `);
 
-    entryIndex += 1;
-  }
+//     entryIndex += 1;
+//   }
 
-  return templates;
-};
+//   return templates;
+// };
 
 const styles = css`
     h3, div, ul, li {
@@ -209,32 +215,31 @@ const styles = css`
     }
 `;
 
+@customElement("demo-history")
 class DemoHistory extends LitElement {
   static styles = [styles];
   receipt: number | undefined;
 
   render() {
-    const historyListItems = createHistoryListItems();
+    // const historyListItems = createHistoryListItems();
 
     return html`
-            <h3>Demo History:</h3>
-            <ul class="container">${historyListItems}</ul>
-        `;
+        <h3>Demo History:</h3>
+        <ul class="container">${[]}</ul>
+    `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.receipt = subscribe(() => this.requestUpdate());
-  }
+  // connectedCallback() {
+  //   super.connectedCallback();
+  //   this.receipt = subscribe(() => this.requestUpdate());
+  // }
 
-  disconnectedCallback() {
-    if (this.receipt) {
-      unsubscribe(this.receipt);
-    }
-    super.disconnectedCallback();
-  }
+  // disconnectedCallback() {
+  //   if (this.receipt) {
+  //     unsubscribe(this.receipt);
+  //   }
+  //   super.disconnectedCallback();
+  // }
 }
-
-customElements.define("demo-history", DemoHistory);
 
 export { DemoHistory };

@@ -1,4 +1,12 @@
-import { css, html, LitElement, property, pushEntry } from "./deps.ts";
+import {
+  css,
+  customElement,
+  HASH_CHANGE,
+  html,
+  LitElement,
+  property,
+  PUSH,
+} from "./deps.ts";
 
 const urlData: Record<string, string> = {
   "/#/home": "home page",
@@ -6,6 +14,8 @@ const urlData: Record<string, string> = {
   "/#/projects": "projects created by the author",
   "/#/articles": "articles written by the author",
 };
+
+const rc = new BroadcastChannel("router-demo-dispatch");
 
 const styles = css`
   .container {
@@ -17,6 +27,7 @@ const styles = css`
   }
 `;
 
+@customElement("demo-menu")
 class DemoMenu extends LitElement {
   @property({ kind: String })
   path = "";
@@ -33,10 +44,10 @@ class DemoMenu extends LitElement {
 
     return html`
       <div class="container">
-        <input type="button" name="${home}" value="home" @pointerdown="${this.onPointer}">
-        <input type="button" name="${about}" value="about"  @pointerdown="${this.onPointer}">
-        <input type="button" name="${projects}" value="projects" @pointerdown="${this.onPointer}">
-        <input type="button" name="${articles}" value="articles" @pointerdown="${this.onPointer}">
+        <input type="button" name="${home}" value="home" @pointerup="${this.onPointer}">
+        <input type="button" name="${about}" value="about"  @pointerup="${this.onPointer}">
+        <input type="button" name="${projects}" value="projects" @pointerup="${this.onPointer}">
+        <input type="button" name="${articles}" value="articles" @pointerup="${this.onPointer}">
       </div>
     `;
   }
@@ -44,16 +55,17 @@ class DemoMenu extends LitElement {
   onPointer(e: PointerEvent) {
     if (!(e.target instanceof HTMLInputElement)) return;
 
-    const { path } = this;
     const { name } = e.target;
 
-    const nameWithoutPrefix = name.substring(path.length);
+    const nameWithoutPrefix = name.substring(this.path.length);
     const title = urlData[nameWithoutPrefix];
 
-    pushEntry(name, title);
+    rc.postMessage({
+      type: PUSH,
+      pathname: name,
+      title,
+    });
   }
 }
-
-customElements.define("demo-menu", DemoMenu);
 
 export { DemoMenu };

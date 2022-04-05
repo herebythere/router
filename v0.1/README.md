@@ -1,3 +1,3 @@
-# URLBang v0.1
+# Router v0.1
 
-Broadcast url changes to applications in the browser.s
+Treat the history API like a data store and broadcast url changes to the browser.

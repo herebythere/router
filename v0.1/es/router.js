@@ -26,8 +26,7 @@ function push(action) {
   const { type } = action;
   if (type !== PUSH) return;
   const { pathname } = action;
-  const currPathname = getWindowPathname();
-  if (pathname === currPathname) return;
+  if (pathname === getWindowPathname()) return;
   const { title, data } = action;
   const state = {
     type,
@@ -43,14 +42,11 @@ const reactions = {
 };
 class Router {
   ctx;
-  constructor(subscription) {
+  constructor(callback) {
     this.ctx = {
       reactions,
-      subscription,
+      callback,
     };
-    this.connect();
-  }
-  connect() {
     window.addEventListener(PAGESHOW, this.onPageShow);
     window.addEventListener(POPSTATE, this.onPopState);
   }
@@ -60,23 +56,17 @@ class Router {
   }
   dispatch(action) {
     const reaction = this.ctx.reactions[action.type];
-    if (reaction === undefined) {
-      return;
-    }
+    if (reaction === undefined) return;
     reaction(action);
-    this.ctx.subscription(history.state);
+    this.ctx.callback(history.state);
   }
   onPageShow(e) {
-    if (history.state === null) {
-      replaceHistoryEntry(PERSONAL_ENTRY);
-    }
-    this.ctx.subscription(history.state);
+    if (history.state === null) replaceHistoryEntry(PERSONAL_ENTRY);
+    this.ctx.callback(history.state);
   }
   onPopState(e) {
-    if (e.state === null) {
-      replaceHistoryEntry(HASH_CHANGE);
-    }
-    this.ctx.subscription(history.state);
+    if (e.state === null) replaceHistoryEntry(HASH_CHANGE);
+    this.ctx.callback(history.state);
   }
 }
 export { Router as Router };
