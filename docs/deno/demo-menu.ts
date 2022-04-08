@@ -1,12 +1,13 @@
 import {
   css,
   customElement,
-  HASH_CHANGE,
   html,
   LitElement,
   property,
   PUSH,
 } from "./deps.ts";
+
+const rc = new BroadcastChannel("router-demo-dispatch");
 
 const urlData: Record<string, string> = {
   "/#/home": "home page",
@@ -14,8 +15,6 @@ const urlData: Record<string, string> = {
   "/#/projects": "projects created by the author",
   "/#/articles": "articles written by the author",
 };
-
-const rc = new BroadcastChannel("router-demo-dispatch");
 
 const styles = css`
   .container {

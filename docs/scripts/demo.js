@@ -2529,12 +2529,13 @@ const reactions = {
   router_back: back,
   router_push: push,
 };
+let index = window.history.state?.index ?? 0;
 class Router {
   ctx;
-  constructor(callback) {
+  constructor(callback1) {
     this.ctx = {
       reactions,
-      callback,
+      callback: callback1,
     };
     window.addEventListener(PAGESHOW, this.onPageShow);
     window.addEventListener(POPSTATE, this.onPopState);
@@ -2546,25 +2547,39 @@ class Router {
   dispatch(action) {
     const reaction = this.ctx.reactions[action.type];
     if (reaction === undefined) return;
-    reaction(action);
-    this.ctx.callback(history.state);
-  }
-  onPageShow() {
-    console.log("page show!");
-    if (this.ctx === undefined) {
-      return;
+    if (action.type === PUSH) {
+      index += 1;
     }
+    if (action.type === BACK) {
+      index -= 1;
+    }
+    index = history.state.index ?? index;
+    reaction(action);
+    this.ctx.callback({
+      ...history.state,
+      index,
+    });
+  }
+  onPageShow = () => {
     if (history.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback(history.state);
-  }
-  onPopState(e9) {
+    index = history.state.index ?? 0;
+    this.ctx.callback({
+      ...history.state,
+      index,
+    });
+  };
+  onPopState = (e9) => {
     if (e9.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback(history.state);
-  }
+    index = history.state.index ?? 0;
+    this.ctx.callback({
+      ...history.state,
+      index,
+    });
+  };
 }
 const bc = new BroadcastChannel("router-demo");
 const rc = new BroadcastChannel("router-demo-dispatch");
@@ -2615,13 +2630,13 @@ function _initializerDefineProperty(target, property, descriptor, context) {
   });
 }
 var _class, _descriptor, _dec;
+const rc1 = new BroadcastChannel("router-demo-dispatch");
 const urlData = {
   "/#/home": "home page",
   "/#/about": "about this page",
   "/#/projects": "projects created by the author",
   "/#/articles": "articles written by the author",
 };
-const rc1 = new BroadcastChannel("router-demo-dispatch");
 const styles1 = r2`
   .container {
     border: 1px solid #efefef;
@@ -2686,39 +2701,13 @@ _class = _dec1(
 var _class1;
 const HIDDEN = "hidden";
 const bc1 = new BroadcastChannel("router-demo");
-const rc2 = new BroadcastChannel("router-demo-dispatch");
-const historyEntries = [];
-let previousIndex = 0;
-let maxIndex = 0;
 bc1.addEventListener("message", (e11) => {
   if (document.visibilityState === HIDDEN) return;
-  const { data } = e11.data;
-  const index = data?.index ?? -1;
-  if (historyEntries[index] === undefined) {
-    historyEntries[index] = e11.data;
+  if (e11.data === null) {
+    console.log("null value found!");
+    return;
   }
-  const { type } = e11.data;
-  if (
-    type === "router_hash_change" &&
-    historyEntries[index]?.type !== "recorded_change"
-  ) {
-    historyEntries[index] = {
-      ...e11.data,
-      type: "recorded_change",
-    };
-    historyEntries.splice(index + 1);
-  }
-  maxIndex = Math.max(index, maxIndex);
-  console.log("maxindex:", maxIndex);
-  previousIndex = index;
-});
-rc2.addEventListener("message", (e12) => {
-  if (document.visibilityState === HIDDEN) return;
-  console.log("router-dispatch:", e12);
-  const { type } = e12.data;
-  if (type === "router_push" && previousIndex !== maxIndex) {
-    historyEntries.splice(previousIndex + 1);
-  }
+  callback();
 });
 const styles11 = r2`
     h3, div, ul, li {
@@ -2774,18 +2763,32 @@ const styles11 = r2`
       background-color: #e3eeff;
     }
 `;
+let callback = () => {
+};
 var _dec2 = n7("demo-history");
 _class1 = _dec2(
   (_class1 = class DemoHistory extends s6 {
     static styles = [
       styles11,
     ];
-    receipt;
     render() {
       return $1`
-        <h3>Demo History:</h3>
-        <ul class="container">${[]}</ul>
+      <h3>Demo History:</h3>
+      <div class="container">
+        <p>${document.title}</p>
+        <p>${window.location.href.substring(window.origin.length)}</p>
+      </div>
     `;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      callback = () => {
+        this.requestUpdate();
+      };
+    }
+    disconnectedCallback() {
+      callback = () => {
+      };
     }
   }) || _class1,
 ) || _class1;

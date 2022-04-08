@@ -10,5 +10,6 @@ export { css, html, LitElement } from "https://cdn.skypack.dev/lit";
 export {
   customElement,
   property,
+  state,
 } from "https://cdn.skypack.dev/lit/decorators";
 export { HASH_CHANGE, PUSH, Router } from "../../v0.1/deno/mod.ts";

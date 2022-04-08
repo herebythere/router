@@ -42,26 +42,22 @@ class Router<D = unknown> {
     if (reaction === undefined) return;
 
     reaction(action);
-    this.ctx.callback(history.state);
+    this.ctx.callback({ ...history.state });
   }
 
-  private onPageShow() {
-    console.log("page show!");
-    if (this.ctx === undefined) {
-      return;
-    }
+  private onPageShow = () => {
     if (history.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback(history.state);
-  }
+    this.ctx.callback({ ...history.state });
+  };
 
-  private onPopState(e: PopStateEvent) {
+  private onPopState = (e: PopStateEvent) => {
     if (e.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback(history.state);
-  }
+    this.ctx.callback({ ...history.state });
+  };
 }
 
 export { Router };

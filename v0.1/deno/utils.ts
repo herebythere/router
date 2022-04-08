@@ -7,12 +7,12 @@ const HASH_CHANGE = "router_hash_change";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 
-function getWindowPathname(): string {
+function getPathname(): string {
   return window.location.href.substring(window.origin.length);
 }
 
 function replaceHistoryEntry<D>(type: HistoryModifier) {
-  const pathname = getWindowPathname();
+  const pathname = getPathname();
   const { title } = document;
 
   const state: BroadcastMessage<D> = {
@@ -27,7 +27,7 @@ function replaceHistoryEntry<D>(type: HistoryModifier) {
 
 export {
   BACK,
-  getWindowPathname,
+  getPathname,
   HASH_CHANGE,
   HIDDEN,
   PAGESHOW,

@@ -1,6 +1,6 @@
 import type { DispatchMessage } from "./router_types.ts";
 
-import { BACK, getWindowPathname, PUSH } from "./utils.ts";
+import { BACK, getPathname, PUSH } from "./utils.ts";
 
 function back<D>(action: DispatchMessage<D>) {
   if (action.type !== BACK) return;
@@ -12,7 +12,7 @@ function push<D>(action: DispatchMessage<D>) {
   if (type !== PUSH) return;
 
   const { pathname } = action;
-  if (pathname === getWindowPathname()) return;
+  if (pathname === getPathname()) return;
 
   const { title, data } = action;
 
