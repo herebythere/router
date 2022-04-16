@@ -2489,15 +2489,15 @@ var n8;
       o32.nodeType === Node.ELEMENT_NODE
     );
 const PUSH = "router_push";
-const BACK = "router_back";
+const BACK = "router_pop";
 const HASH_CHANGE = "router_hash_change";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
-function getWindowPathname() {
+function getPathname() {
   return window.location.href.substring(window.origin.length);
 }
 function replaceHistoryEntry(type) {
-  const pathname = getWindowPathname();
+  const pathname = getPathname();
   const { title } = document;
   const state = {
     data: undefined,
@@ -2507,7 +2507,7 @@ function replaceHistoryEntry(type) {
   };
   history.replaceState(state, title, pathname);
 }
-function back(action) {
+function pop(action) {
   if (action.type !== BACK) return;
   history.back();
 }
@@ -2515,7 +2515,7 @@ function push(action) {
   const { type } = action;
   if (type !== PUSH) return;
   const { pathname } = action;
-  if (pathname === getWindowPathname()) return;
+  if (pathname === getPathname()) return;
   const { title, data } = action;
   const state = {
     type,
@@ -2526,17 +2526,13 @@ function push(action) {
   history.pushState(state, title, pathname);
 }
 const reactions = {
-  router_back: back,
+  router_pop: pop,
   router_push: push,
 };
-let index = window.history.state?.index ?? 0;
 class Router {
-  ctx;
-  constructor(callback1) {
-    this.ctx = {
-      reactions,
-      callback: callback1,
-    };
+  callback;
+  constructor(callback) {
+    this.callback = callback;
     window.addEventListener(PAGESHOW, this.onPageShow);
     window.addEventListener(POPSTATE, this.onPopState);
   }
@@ -2545,39 +2541,27 @@ class Router {
     window.removeEventListener(POPSTATE, this.onPopState);
   }
   dispatch(action) {
-    const reaction = this.ctx.reactions[action.type];
+    const reaction = reactions[action.type];
     if (reaction === undefined) return;
-    if (action.type === PUSH) {
-      index += 1;
-    }
-    if (action.type === BACK) {
-      index -= 1;
-    }
-    index = history.state.index ?? index;
     reaction(action);
-    this.ctx.callback({
+    this.callback({
       ...history.state,
-      index,
     });
   }
   onPageShow = () => {
     if (history.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    index = history.state.index ?? 0;
-    this.ctx.callback({
+    this.callback({
       ...history.state,
-      index,
     });
   };
   onPopState = (e9) => {
     if (e9.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    index = history.state.index ?? 0;
-    this.ctx.callback({
+    this.callback({
       ...history.state,
-      index,
     });
   };
 }
@@ -2676,6 +2660,7 @@ _class = _dec1(
         type: PUSH,
         pathname: name,
         title,
+        data: title,
       });
     }
     constructor(...args) {
@@ -2707,7 +2692,7 @@ bc1.addEventListener("message", (e11) => {
     console.log("null value found!");
     return;
   }
-  callback();
+  callback1();
 });
 const styles11 = r2`
     h3, div, ul, li {
@@ -2763,7 +2748,7 @@ const styles11 = r2`
       background-color: #e3eeff;
     }
 `;
-let callback = () => {
+let callback1 = () => {
 };
 var _dec2 = n7("demo-history");
 _class1 = _dec2(
@@ -2782,12 +2767,12 @@ _class1 = _dec2(
     }
     connectedCallback() {
       super.connectedCallback();
-      callback = () => {
+      callback1 = () => {
         this.requestUpdate();
       };
     }
     disconnectedCallback() {
-      callback = () => {
+      callback1 = () => {
       };
     }
   }) || _class1,

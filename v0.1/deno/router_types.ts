@@ -1,5 +1,9 @@
 // brian taylor vann
 
+interface Action {
+  type: string;
+}
+
 interface MessageParams<D> {
   pathname: string;
   title: string;
@@ -7,7 +11,7 @@ interface MessageParams<D> {
 }
 
 interface PopMessage {
-  type: "router_back";
+  type: "router_pop";
 }
 
 type PushMessage<D = unknown> = {
@@ -29,18 +33,17 @@ type BroadcastMessage<D = unknown> = {
 type Callback<D> = (data: D) => void;
 type Reaction<A> = (action: A) => void;
 type ReactionRecord<A> = Record<string, Reaction<A>>;
-
-interface RouterContext<A, D> {
-  reactions: ReactionRecord<A>;
-  callback: Callback<D>;
-}
+type ReactionMap<R> = {
+  [K in keyof R]: R[K];
+};
 
 export type {
   BroadcastMessage,
   Callback,
   DispatchMessage,
   HistoryModifier,
+  PopMessage,
   PushMessage,
+  ReactionMap,
   ReactionRecord,
-  RouterContext,
 };

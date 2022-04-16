@@ -7,11 +7,12 @@
 // Rather than maintaining our own state, the histry api
 // will be the store in the larger "router" pattern
 
-import type {
+import {
   BroadcastMessage,
   Callback,
   DispatchMessage,
-  RouterContext,
+  ReactionMap,
+  ReactionRecord,
 } from "./router_types.ts";
 
 import {
@@ -22,11 +23,13 @@ import {
 } from "./utils.ts";
 import { reactions } from "./router_actions.ts";
 
-class Router<D = unknown> {
-  private ctx: RouterContext<DispatchMessage<D>, BroadcastMessage<D>>;
+class Router<D = unknown, B = unknown> {
+  private callback: Callback<BroadcastMessage<B>>;
 
-  constructor(callback: Callback<BroadcastMessage<D>>) {
-    this.ctx = { reactions, callback };
+  constructor(
+    callback: Callback<BroadcastMessage<B>>,
+  ) {
+    this.callback = callback;
 
     window.addEventListener(PAGESHOW, this.onPageShow);
     window.addEventListener(POPSTATE, this.onPopState);
@@ -38,25 +41,25 @@ class Router<D = unknown> {
   }
 
   dispatch(action: DispatchMessage<D>) {
-    const reaction = this.ctx.reactions[action.type];
+    const reaction = reactions[action.type];
     if (reaction === undefined) return;
 
     reaction(action);
-    this.ctx.callback({ ...history.state });
+    this.callback({ ...history.state });
   }
 
   private onPageShow = () => {
     if (history.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback({ ...history.state });
+    this.callback({ ...history.state });
   };
 
   private onPopState = (e: PopStateEvent) => {
     if (e.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback({ ...history.state });
+    this.callback({ ...history.state });
   };
 }
 

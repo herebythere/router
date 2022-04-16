@@ -2,7 +2,7 @@ import type { DispatchMessage } from "./router_types.ts";
 
 import { BACK, getPathname, PUSH } from "./utils.ts";
 
-function back<D>(action: DispatchMessage<D>) {
+function pop<D>(action: DispatchMessage<D>) {
   if (action.type !== BACK) return;
   history.back();
 }
@@ -21,7 +21,7 @@ function push<D>(action: DispatchMessage<D>) {
 }
 
 const reactions = {
-  router_back: back,
+  router_pop: pop,
   router_push: push,
 };
 

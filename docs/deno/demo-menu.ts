@@ -63,6 +63,7 @@ class DemoMenu extends LitElement {
       type: PUSH,
       pathname: name,
       title,
+      data: title,
     });
   }
 }

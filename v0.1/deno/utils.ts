@@ -1,7 +1,7 @@
 import type { BroadcastMessage, HistoryModifier } from "./router_types.ts";
 
 const PUSH = "router_push";
-const BACK = "router_back";
+const BACK = "router_pop";
 const HIDDEN = "hidden";
 const HASH_CHANGE = "router_hash_change";
 const POPSTATE = "popstate";

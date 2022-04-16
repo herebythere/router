@@ -1,5 +1,5 @@
 const PUSH = "router_push";
-const BACK = "router_back";
+const BACK = "router_pop";
 const HASH_CHANGE = "router_hash_change";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
@@ -17,7 +17,7 @@ function replaceHistoryEntry(type) {
   };
   history.replaceState(state, title, pathname);
 }
-function back(action) {
+function pop(action) {
   if (action.type !== BACK) return;
   history.back();
 }
@@ -36,16 +36,13 @@ function push(action) {
   history.pushState(state, title, pathname);
 }
 const reactions = {
-  router_back: back,
+  router_pop: pop,
   router_push: push,
 };
 class Router {
-  ctx;
+  callback;
   constructor(callback) {
-    this.ctx = {
-      reactions,
-      callback,
-    };
+    this.callback = callback;
     window.addEventListener(PAGESHOW, this.onPageShow);
     window.addEventListener(POPSTATE, this.onPopState);
   }
@@ -54,10 +51,10 @@ class Router {
     window.removeEventListener(POPSTATE, this.onPopState);
   }
   dispatch(action) {
-    const reaction = this.ctx.reactions[action.type];
+    const reaction = reactions[action.type];
     if (reaction === undefined) return;
     reaction(action);
-    this.ctx.callback({
+    this.callback({
       ...history.state,
     });
   }
@@ -65,7 +62,7 @@ class Router {
     if (history.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback({
+    this.callback({
       ...history.state,
     });
   };
@@ -73,7 +70,7 @@ class Router {
     if (e.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.ctx.callback({
+    this.callback({
       ...history.state,
     });
   };
