@@ -1,8 +1,6 @@
 const PUSH = "router_push";
-const BACK = "router_pop";
+const POP = "router_pop";
 const HASH_CHANGE = "router_hash_change";
-const POPSTATE = "popstate";
-const PAGESHOW = "pageshow";
 function getPathname() {
   return window.location.href.substring(window.origin.length);
 }
@@ -18,7 +16,7 @@ function replaceHistoryEntry(type) {
   history.replaceState(state, title, pathname);
 }
 function pop(action) {
-  if (action.type !== BACK) return;
+  if (action.type !== POP) return;
   history.back();
 }
 function push(action) {
@@ -39,6 +37,8 @@ const reactions = {
   router_pop: pop,
   router_push: push,
 };
+const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 class Router {
   callback;
   constructor(callback) {

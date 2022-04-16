@@ -32,10 +32,7 @@ type BroadcastMessage<D = unknown> = {
 
 type Callback<D> = (data: D) => void;
 type Reaction<A> = (action: A) => void;
-type ReactionRecord<A> = Record<string, Reaction<A>>;
-type ReactionMap<R> = {
-  [K in keyof R]: R[K];
-};
+type ReactionRecord<A> = Record<DispatchMessage["type"], Reaction<A>>;
 
 export type {
   BroadcastMessage,
@@ -44,6 +41,5 @@ export type {
   HistoryModifier,
   PopMessage,
   PushMessage,
-  ReactionMap,
   ReactionRecord,
 };

@@ -7,28 +7,17 @@
 // Rather than maintaining our own state, the histry api
 // will be the store in the larger "router" pattern
 
-import {
-  BroadcastMessage,
-  Callback,
-  DispatchMessage,
-  ReactionMap,
-  ReactionRecord,
-} from "./router_types.ts";
-
-import {
-  HASH_CHANGE,
-  PAGESHOW,
-  POPSTATE,
-  replaceHistoryEntry,
-} from "./utils.ts";
+import { BroadcastMessage, Callback, DispatchMessage } from "./router_types.ts";
+import { HASH_CHANGE, replaceHistoryEntry } from "./utils.ts";
 import { reactions } from "./router_actions.ts";
+
+const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 
 class Router<D = unknown, B = unknown> {
   private callback: Callback<BroadcastMessage<B>>;
 
-  constructor(
-    callback: Callback<BroadcastMessage<B>>,
-  ) {
+  constructor(callback: Callback<BroadcastMessage<B>>) {
     this.callback = callback;
 
     window.addEventListener(PAGESHOW, this.onPageShow);

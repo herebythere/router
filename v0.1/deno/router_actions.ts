@@ -1,9 +1,9 @@
 import type { DispatchMessage } from "./router_types.ts";
 
-import { BACK, getPathname, PUSH } from "./utils.ts";
+import { getPathname, POP, PUSH } from "./utils.ts";
 
 function pop<D>(action: DispatchMessage<D>) {
-  if (action.type !== BACK) return;
+  if (action.type !== POP) return;
   history.back();
 }
 

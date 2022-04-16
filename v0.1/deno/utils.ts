@@ -1,11 +1,8 @@
 import type { BroadcastMessage, HistoryModifier } from "./router_types.ts";
 
 const PUSH = "router_push";
-const BACK = "router_pop";
-const HIDDEN = "hidden";
+const POP = "router_pop";
 const HASH_CHANGE = "router_hash_change";
-const POPSTATE = "popstate";
-const PAGESHOW = "pageshow";
 
 function getPathname(): string {
   return window.location.href.substring(window.origin.length);
@@ -25,13 +22,4 @@ function replaceHistoryEntry<D>(type: HistoryModifier) {
   history.replaceState(state, title, pathname);
 }
 
-export {
-  BACK,
-  getPathname,
-  HASH_CHANGE,
-  HIDDEN,
-  PAGESHOW,
-  POPSTATE,
-  PUSH,
-  replaceHistoryEntry,
-};
+export { getPathname, HASH_CHANGE, POP, PUSH, replaceHistoryEntry };
