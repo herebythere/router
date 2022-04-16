@@ -2488,9 +2488,8 @@ var n8;
     o224.assignedNodes(n221).filter((o32) =>
       o32.nodeType === Node.ELEMENT_NODE
     );
-const PUSH = "router_push";
-const POP = "router_pop";
-const HASH_CHANGE = "router_hash_change";
+const BROADCAST = "router_broadcast";
+const HASH_CHANGE = "router_broadcast_hash_change";
 function getPathname() {
   return window.location.href.substring(window.origin.length);
 }
@@ -2505,13 +2504,12 @@ function replaceHistoryEntry(type) {
   };
   history.replaceState(state, title, pathname);
 }
-function pop(action) {
-  if (action.type !== POP) return;
+function back() {
   history.back();
 }
 function push(action) {
   const { type } = action;
-  if (type !== PUSH) return;
+  if (type !== BROADCAST) return;
   const { pathname } = action;
   if (pathname === getPathname()) return;
   const { title, data } = action;
@@ -2524,8 +2522,8 @@ function push(action) {
   history.pushState(state, title, pathname);
 }
 const reactions = {
-  router_pop: pop,
-  router_push: push,
+  router_pop: back,
+  router_broadcast: push,
 };
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
@@ -2657,7 +2655,7 @@ _class = _dec1(
       const nameWithoutPrefix = name.substring(this.path.length);
       const title = urlData[nameWithoutPrefix];
       rc1.postMessage({
-        type: PUSH,
+        type: BROADCAST,
         pathname: name,
         title,
         data: title,

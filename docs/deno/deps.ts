@@ -12,4 +12,4 @@ export {
   property,
   state,
 } from "https://cdn.skypack.dev/lit/decorators";
-export { HASH_CHANGE, PUSH, Router } from "../../v0.1/deno/mod.ts";
+export { BROADCAST, HASH_CHANGE, Router } from "../../v0.1/deno/mod.ts";

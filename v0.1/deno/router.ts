@@ -14,10 +14,10 @@ import { reactions } from "./router_actions.ts";
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 
-class Router<D = unknown, B = unknown> {
-  private callback: Callback<BroadcastMessage<B>>;
+class Router<D = unknown> {
+  private callback: Callback<BroadcastMessage<D>>;
 
-  constructor(callback: Callback<BroadcastMessage<B>>) {
+  constructor(callback: Callback<BroadcastMessage<D>>) {
     this.callback = callback;
 
     window.addEventListener(PAGESHOW, this.onPageShow);

@@ -1,10 +1,10 @@
 import {
+  BROADCAST,
   css,
   customElement,
   html,
   LitElement,
   property,
-  PUSH,
 } from "./deps.ts";
 
 const rc = new BroadcastChannel("router-demo-dispatch");
@@ -60,7 +60,7 @@ class DemoMenu extends LitElement {
     const title = urlData[nameWithoutPrefix];
 
     rc.postMessage({
-      type: PUSH,
+      type: BROADCAST,
       pathname: name,
       title,
       data: title,

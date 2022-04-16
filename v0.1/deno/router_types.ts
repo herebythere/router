@@ -1,7 +1,7 @@
 // brian taylor vann
 
-interface Action {
-  type: string;
+interface PopMessage {
+  type: "router_pop";
 }
 
 interface MessageParams<D> {
@@ -10,12 +10,8 @@ interface MessageParams<D> {
   data?: D;
 }
 
-interface PopMessage {
-  type: "router_pop";
-}
-
 type PushMessage<D = unknown> = {
-  type: "router_push";
+  type: "router_broadcast";
 } & MessageParams<D>;
 
 type DispatchMessage<D = unknown> =
@@ -23,16 +19,14 @@ type DispatchMessage<D = unknown> =
   | PushMessage<D>;
 
 type HistoryModifier =
-  | "router_push"
-  | "router_hash_change";
+  | "router_broadcast"
+  | "router_broadcast_hash_change";
 
 type BroadcastMessage<D = unknown> = {
   type: HistoryModifier;
 } & MessageParams<D>;
 
 type Callback<D> = (data: D) => void;
-type Reaction<A> = (action: A) => void;
-type ReactionRecord<A> = Record<DispatchMessage["type"], Reaction<A>>;
 
 export type {
   BroadcastMessage,
@@ -41,5 +35,4 @@ export type {
   HistoryModifier,
   PopMessage,
   PushMessage,
-  ReactionRecord,
 };

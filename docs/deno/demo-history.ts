@@ -1,9 +1,8 @@
 // brian taylor vann
 
-import { customElement } from "./deps.ts";
 import type { BroadcastMessage } from "./deps.ts";
 
-import { css, html, LitElement } from "./deps.ts";
+import { css, customElement, html, LitElement } from "./deps.ts";
 
 const HIDDEN = "hidden";
 
