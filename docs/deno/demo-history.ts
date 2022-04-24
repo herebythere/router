@@ -6,7 +6,6 @@ import { css, customElement, html, LitElement } from "./deps.ts";
 
 const HIDDEN = "hidden";
 
-// listen for broadcasts
 const bc = new BroadcastChannel("router-demo");
 
 bc.addEventListener(
@@ -78,7 +77,9 @@ const styles = css`
     }
 `;
 
-let callback = () => {};
+// exremely cheap observer
+let initialCallback = () => {};
+let callback = initialCallback;
 
 @customElement("demo-history")
 class DemoHistory extends LitElement {
@@ -102,7 +103,7 @@ class DemoHistory extends LitElement {
   }
 
   disconnectedCallback() {
-    callback = () => {};
+    callback = initialCallback;
   }
 }
 

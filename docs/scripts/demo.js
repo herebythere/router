@@ -2564,10 +2564,10 @@ class Router {
   };
 }
 const bc = new BroadcastChannel("router-demo");
-const rc = new BroadcastChannel("router-demo-dispatch");
 const router = new Router((message) => {
   bc.postMessage(message);
 });
+const rc = new BroadcastChannel("router-demo-dispatch");
 rc.addEventListener("message", (message) => {
   router.dispatch(message.data);
 });
@@ -2746,8 +2746,9 @@ const styles11 = r2`
       background-color: #e3eeff;
     }
 `;
-let callback1 = () => {
+let initialCallback = () => {
 };
+let callback1 = initialCallback;
 var _dec2 = n7("demo-history");
 _class1 = _dec2(
   (_class1 = class DemoHistory extends s6 {
@@ -2770,8 +2771,7 @@ _class1 = _dec2(
       };
     }
     disconnectedCallback() {
-      callback1 = () => {
-      };
+      callback1 = initialCallback;
     }
   }) || _class1,
 ) || _class1;
