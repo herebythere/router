@@ -221,7 +221,7 @@ const trustedTypesBuilderTestOnly = function () {
     prototype: ObjectPrototype,
   } = Object;
   const { hasOwnProperty: hasOwnProperty2 } = ObjectPrototype;
-  const { forEach, push: push1 } = Array.prototype;
+  const { forEach, push } = Array.prototype;
   const creatorSymbol = Symbol();
   const privates = function (obj) {
     let v2 = privateMap.get(obj);
@@ -517,7 +517,7 @@ const trustedTypesBuilderTestOnly = function () {
     enforceNameRestrictions = true;
     allowedNames.length = 0;
     forEach.call(allowedPolicyNames, (el) => {
-      push1.call(allowedNames, "" + el);
+      push.call(allowedNames, "" + el);
     });
     allowDuplicateNames = allowDuplicates;
     policyNames.length = 0;
@@ -2505,68 +2505,37 @@ function replaceHistoryEntry(type) {
   };
   history.replaceState(state, title, location);
 }
-function back() {
-  history.back();
-}
-function push(action) {
-  const { type } = action;
-  if (type !== BROADCAST) return;
-  const { location } = action;
-  if (location === getLocation()) return;
-  const { title, data } = action;
-  const state = {
-    type,
-    data,
-    title,
-    location,
-  };
-  history.pushState(state, title, location);
-}
-const reactions = {
-  router_pop: back,
-  router_broadcast: push,
-};
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
-class Router {
-  callback;
-  constructor(callback) {
-    this.callback = callback;
-    window.addEventListener(PAGESHOW, this.onPageShow);
-    window.addEventListener(POPSTATE, this.onPopState);
-  }
-  disconnect() {
-    window.removeEventListener(PAGESHOW, this.onPageShow);
-    window.removeEventListener(POPSTATE, this.onPopState);
-  }
-  dispatch(action) {
-    const reaction = reactions[action.type];
-    if (reaction === undefined) return;
-    reaction(action);
-    this.callback({
-      ...history.state,
-    });
-  }
-  onPageShow = () => {
-    if (history.state === null) {
-      replaceHistoryEntry(PAGE_SHOW);
-    }
-    this.callback(history.state);
-  };
-  onPopState = (e9) => {
-    if (e9.state === null) {
-      replaceHistoryEntry(HASH_CHANGE);
-    }
-    this.callback(history.state);
-  };
+let callback = () => {
+};
+function subscribe(cb) {
+  callback = cb;
 }
+function pushState(state) {
+  const { title, location } = state;
+  history.pushState(state, title, location);
+  callback(history.state);
+}
+function onPopState(e9) {
+  if (e9.state === null) {
+    replaceHistoryEntry(HASH_CHANGE);
+  }
+  callback(history.state);
+}
+function onPageShow() {
+  if (history.state === null) {
+    replaceHistoryEntry(PAGE_SHOW);
+  }
+  callback(history.state);
+}
+window.addEventListener(PAGESHOW, onPageShow);
+window.addEventListener(POPSTATE, onPopState);
 const bc = new BroadcastChannel("router-demo");
-const router = new Router((message) => {
+subscribe((message) => {
+  console.log("router subscription");
+  console.log(message);
   bc.postMessage(message);
-});
-const rc = new BroadcastChannel("router-demo-dispatch");
-rc.addEventListener("message", (message) => {
-  router.dispatch(message.data);
 });
 function _applyDecoratedDescriptor(
   target,
@@ -2609,14 +2578,29 @@ function _initializerDefineProperty(target, property, descriptor, context) {
   });
 }
 var _class, _descriptor, _dec;
-const rc1 = new BroadcastChannel("router-demo-dispatch");
+const urlTitles = {
+  "/#/home": "home page",
+  "/#/dogs": "dogs",
+  "/#/cats": "cats",
+  "/#/pigs": "pigs",
+};
 const urlData = {
   "/#/home": "home page",
-  "/#/about": "about this page",
-  "/#/projects": "projects created by the author",
-  "/#/articles": "articles written by the author",
+  "/#/dogs": "dogs like magic tricks",
+  "/#/cats": "cats are grand hunters",
+  "/#/pigs": "pigs are curious, often playful",
 };
 const styles1 = r2`
+  input {
+    border: 2px solid #000;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    font-family: monospace;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
   .container {
     border: 1px solid #efefef;
     box-sizing: border-box;
@@ -2632,30 +2616,36 @@ _class = _dec1(
       styles1,
     ];
     render() {
-      const { path } = this;
-      const home = path + "/#/home";
-      const about = path + "/#/about";
-      const projects = path + "/#/projects";
-      const articles = path + "/#/articles";
-      return $1`
+      const path = this.path;
+      const home = path + "/";
+      const dogs = path + "/#/dogs";
+      const cats = path + "/#/cats";
+      const pigs = path + "/#/pigs";
+      return $1`\
+      <input type="button" name="back" value="back" @pointerup="${this.onBack}">
+
       <div class="container">
         <input type="button" name="${home}" value="home" @pointerup="${this.onPointer}">
-        <input type="button" name="${about}" value="about"  @pointerup="${this.onPointer}">
-        <input type="button" name="${projects}" value="projects" @pointerup="${this.onPointer}">
-        <input type="button" name="${articles}" value="articles" @pointerup="${this.onPointer}">
+        <input type="button" name="${dogs}" value="dog"  @pointerup="${this.onPointer}">
+        <input type="button" name="${cats}" value="cat" @pointerup="${this.onPointer}">
+        <input type="button" name="${pigs}" value="pig" @pointerup="${this.onPointer}">
       </div>
     `;
+    }
+    onBack() {
+      history.back();
     }
     onPointer(e10) {
       if (!(e10.target instanceof HTMLInputElement)) return;
       const { name } = e10.target;
       const nameWithoutPrefix = name.substring(this.path.length);
-      const title = urlData[nameWithoutPrefix];
-      rc1.postMessage({
+      const title = urlTitles[nameWithoutPrefix];
+      const data = urlData[nameWithoutPrefix];
+      pushState({
         type: BROADCAST,
-        pathname: name,
+        data,
         title,
-        data: title,
+        location: name,
       });
     }
     constructor(...args) {
@@ -2687,83 +2677,42 @@ bc1.addEventListener("message", (e11) => {
     console.log("null value found!");
     return;
   }
-  callback1();
+  callback1(e11.data);
 });
 const styles11 = r2`
-    h3, div, ul, li {
-      box-sizing: border-box;
-    }
-    h3 {
-      margin-top: 0;
-    }
-    ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-    li, input[type=button] {
-      cursor: pointer;
-    }
-
-    .container {
-      border: 1px solid #efefef;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      height: 70vh;
-      width: 50vw;
-      max-height: 600px;
-      max-width: 600px;
-      overflow: auto;
-    }
-
-    .unknown, .defined, .current {
-      border: 1px solid transparent;
-    }
-
-    .unknown {
-      color: #878787;
-    }
-    .unknown:hover, .defined:hover {
-      background-color: #fcfcfc;
-      border: 1px solid #ababab;
-    }
-
-    .defined {
-      color: #434343;
-    }
-    .defined:hover {
-      border: 1px solid #565656;
-    }
-
-    .current {
-      color: #1e5bbd;
-      background-color: #f5fbff;
-    }
-    .current:hover {
-      background-color: #e3eeff;
-    }
+	:host {
+		font-family: monospace;
+		border: 1px solid #efefef;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		height: 70vh;
+		width: 50vw;
+		max-height: 600px;
+		max-width: 600px;
+		overflow: auto;
+	}
 `;
 let initialCallback = () => {
 };
 let callback1 = initialCallback;
-var _dec2 = n7("demo-history");
+var _dec2 = n7("demo-display");
 _class1 = _dec2(
-  (_class1 = class DemoHistory extends s6 {
+  (_class1 = class DemoDisplay extends s6 {
     static styles = [
       styles11,
     ];
     render() {
       return $1`
-      <h3>Demo History:</h3>
       <div class="container">
         <p>${document.title}</p>
-        <p>${window.location.href.substring(window.origin.length)}</p>
+        <p>${history.state?.data}</p>
       </div>
     `;
     }
     connectedCallback() {
       super.connectedCallback();
-      callback1 = () => {
+      callback1 = (message) => {
         this.requestUpdate();
       };
     }

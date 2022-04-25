@@ -1,7 +1,6 @@
 import type { BroadcastMessage, HistoryModifier } from "./router_types.ts";
 
 const BROADCAST = "router_broadcast";
-const POP = "router_pop";
 const HASH_CHANGE = "router_broadcast_hash_change";
 const PAGE_SHOW = "router_broadcast_unknown";
 
@@ -23,11 +22,4 @@ function replaceHistoryEntry<D>(type: HistoryModifier) {
   history.replaceState(state, title, location);
 }
 
-export {
-  BROADCAST,
-  getLocation,
-  HASH_CHANGE,
-  PAGE_SHOW,
-  POP,
-  replaceHistoryEntry,
-};
+export { BROADCAST, getLocation, HASH_CHANGE, PAGE_SHOW, replaceHistoryEntry };

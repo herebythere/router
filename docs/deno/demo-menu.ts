@@ -5,18 +5,40 @@ import {
   html,
   LitElement,
   property,
+  pushState,
 } from "./deps.ts";
 
-const rc = new BroadcastChannel("router-demo-dispatch");
+/**
+ * Buttons should pop
+ * instantaneous press
+ * but slow release
+ */
+
+const urlTitles: Record<string, string> = {
+  "/#/home": "home page",
+  "/#/dogs": "dogs",
+  "/#/cats": "cats",
+  "/#/pigs": "pigs",
+};
 
 const urlData: Record<string, string> = {
   "/#/home": "home page",
-  "/#/about": "about this page",
-  "/#/projects": "projects created by the author",
-  "/#/articles": "articles written by the author",
+  "/#/dogs": "dogs like magic tricks",
+  "/#/cats": "cats are grand hunters",
+  "/#/pigs": "pigs are curious, often playful",
 };
 
 const styles = css`
+  input {
+    border: 2px solid #000;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    font-family: monospace;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
   .container {
     border: 1px solid #efefef;
     box-sizing: border-box;
@@ -34,36 +56,42 @@ class DemoMenu extends LitElement {
   static styles = [styles];
 
   render() {
-    const { path } = this;
+    const path = this.path;
 
-    const home = path + "/#/home";
-    const about = path + "/#/about";
-    const projects = path + "/#/projects";
-    const articles = path + "/#/articles";
+    const home = path + "/";
+    const dogs = path + "/#/dogs";
+    const cats = path + "/#/cats";
+    const pigs = path + "/#/pigs";
 
-    return html`
+    return html`\
+      <input type="button" name="back" value="back" @pointerup="${this.onBack}">
+
       <div class="container">
         <input type="button" name="${home}" value="home" @pointerup="${this.onPointer}">
-        <input type="button" name="${about}" value="about"  @pointerup="${this.onPointer}">
-        <input type="button" name="${projects}" value="projects" @pointerup="${this.onPointer}">
-        <input type="button" name="${articles}" value="articles" @pointerup="${this.onPointer}">
+        <input type="button" name="${dogs}" value="dog"  @pointerup="${this.onPointer}">
+        <input type="button" name="${cats}" value="cat" @pointerup="${this.onPointer}">
+        <input type="button" name="${pigs}" value="pig" @pointerup="${this.onPointer}">
       </div>
     `;
+  }
+
+  onBack() {
+    history.back();
   }
 
   onPointer(e: PointerEvent) {
     if (!(e.target instanceof HTMLInputElement)) return;
 
     const { name } = e.target;
-
     const nameWithoutPrefix = name.substring(this.path.length);
-    const title = urlData[nameWithoutPrefix];
+    const title = urlTitles[nameWithoutPrefix];
+    const data = urlData[nameWithoutPrefix];
 
-    rc.postMessage({
+    pushState({
       type: BROADCAST,
-      pathname: name,
+      data,
       title,
-      data: title,
+      location: name,
     });
   }
 }

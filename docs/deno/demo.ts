@@ -1,3 +1,3 @@
 import "./router.ts";
 import "./demo-menu.ts";
-import "./demo-history.ts";
+import "./demo-display.ts";
