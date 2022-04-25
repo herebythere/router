@@ -77,7 +77,7 @@ const styles = css`
     }
 `;
 
-// exremely cheap observer
+// extremely cheap observer
 let initialCallback = () => {};
 let callback = initialCallback;
 
@@ -103,6 +103,7 @@ class DemoHistory extends LitElement {
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     callback = initialCallback;
   }
 }

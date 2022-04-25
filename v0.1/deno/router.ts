@@ -8,7 +8,7 @@
 // will be the store in the larger "router" pattern
 
 import { BroadcastMessage, Callback, DispatchMessage } from "./router_types.ts";
-import { HASH_CHANGE, replaceHistoryEntry } from "./utils.ts";
+import { HASH_CHANGE, PAGE_SHOW, replaceHistoryEntry } from "./utils.ts";
 import { reactions } from "./router_actions.ts";
 
 const POPSTATE = "popstate";
@@ -37,18 +37,21 @@ class Router<D = unknown> {
     this.callback({ ...history.state });
   }
 
+  // is page show different enough?
   private onPageShow = () => {
     if (history.state === null) {
-      replaceHistoryEntry(HASH_CHANGE);
+      replaceHistoryEntry(PAGE_SHOW);
     }
-    this.callback({ ...history.state });
+
+    this.callback(history.state);
   };
 
   private onPopState = (e: PopStateEvent) => {
     if (e.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.callback({ ...history.state });
+
+    this.callback(history.state);
   };
 }
 

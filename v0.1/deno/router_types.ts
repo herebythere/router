@@ -5,7 +5,7 @@ interface PopMessage {
 }
 
 interface MessageParams<D> {
-  pathname: string;
+  location: string;
   title: string;
   data?: D;
 }
@@ -20,6 +20,7 @@ type DispatchMessage<D = unknown> =
 
 type HistoryModifier =
   | "router_broadcast"
+  | "router_broadcast_unknown"
   | "router_broadcast_hash_change";
 
 type BroadcastMessage<D = unknown> = {

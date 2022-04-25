@@ -1,6 +1,6 @@
 import type { DispatchMessage } from "./router_types.ts";
 
-import { BROADCAST, getPathname } from "./utils.ts";
+import { BROADCAST, getLocation } from "./utils.ts";
 
 function back() {
   history.back();
@@ -9,12 +9,12 @@ function back() {
 function push<D>(action: DispatchMessage<D>) {
   const { type } = action;
   if (type !== BROADCAST) return;
-  const { pathname } = action;
-  if (pathname === getPathname()) return;
+  const { location } = action;
+  if (location === getLocation()) return;
 
   const { title, data } = action;
-  const state = { type, data, title, pathname };
-  history.pushState(state, title, pathname);
+  const state = { type, data, title, location };
+  history.pushState(state, title, location);
 }
 
 const reactions = {

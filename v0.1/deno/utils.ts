@@ -3,23 +3,31 @@ import type { BroadcastMessage, HistoryModifier } from "./router_types.ts";
 const BROADCAST = "router_broadcast";
 const POP = "router_pop";
 const HASH_CHANGE = "router_broadcast_hash_change";
+const PAGE_SHOW = "router_broadcast_unknown";
 
-function getPathname(): string {
+function getLocation(): string {
   return window.location.href.substring(window.origin.length);
 }
 
 function replaceHistoryEntry<D>(type: HistoryModifier) {
-  const pathname = getPathname();
+  const location = getLocation();
   const { title } = document;
 
   const state: BroadcastMessage<D> = {
-    data: undefined,
+    data: history.state?.data,
     type,
-    pathname,
+    location,
     title,
   };
 
-  history.replaceState(state, title, pathname);
+  history.replaceState(state, title, location);
 }
 
-export { BROADCAST, getPathname, HASH_CHANGE, POP, replaceHistoryEntry };
+export {
+  BROADCAST,
+  getLocation,
+  HASH_CHANGE,
+  PAGE_SHOW,
+  POP,
+  replaceHistoryEntry,
+};

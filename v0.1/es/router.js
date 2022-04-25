@@ -1,19 +1,20 @@
 const BROADCAST = "router_broadcast";
 const POP = "router_pop";
 const HASH_CHANGE = "router_broadcast_hash_change";
-function getPathname() {
+const PAGE_SHOW = "router_broadcast_unknown";
+function getLocation() {
   return window.location.href.substring(window.origin.length);
 }
 function replaceHistoryEntry(type) {
-  const pathname = getPathname();
+  const location = getLocation();
   const { title } = document;
   const state = {
-    data: undefined,
+    data: history.state?.data,
     type,
-    pathname,
+    location,
     title,
   };
-  history.replaceState(state, title, pathname);
+  history.replaceState(state, title, location);
 }
 function back() {
   history.back();
@@ -21,16 +22,16 @@ function back() {
 function push(action) {
   const { type } = action;
   if (type !== BROADCAST) return;
-  const { pathname } = action;
-  if (pathname === getPathname()) return;
+  const { location } = action;
+  if (location === getLocation()) return;
   const { title, data } = action;
   const state = {
     type,
     data,
     title,
-    pathname,
+    location,
   };
-  history.pushState(state, title, pathname);
+  history.pushState(state, title, location);
 }
 const reactions = {
   router_pop: back,
@@ -59,19 +60,15 @@ class Router {
   }
   onPageShow = () => {
     if (history.state === null) {
-      replaceHistoryEntry(HASH_CHANGE);
+      replaceHistoryEntry(PAGE_SHOW);
     }
-    this.callback({
-      ...history.state,
-    });
+    this.callback(history.state);
   };
   onPopState = (e) => {
     if (e.state === null) {
       replaceHistoryEntry(HASH_CHANGE);
     }
-    this.callback({
-      ...history.state,
-    });
+    this.callback(history.state);
   };
 }
 export { Router as Router };
