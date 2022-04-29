@@ -1,4 +1,3 @@
-export type { BroadcastMessage } from "./router_types.ts";
+export type { BroadcastMessage } from "./router.ts";
 
-export { subscribe, pushState } from "./router.ts";
-export { BROADCAST, HASH_CHANGE } from "./utils.ts";
+export { BROADCAST, HASH_CHANGE, push, UNKNOWN } from "./router.ts";

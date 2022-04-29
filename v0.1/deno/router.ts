@@ -1,46 +1,64 @@
 // brian taylor vann
 // router
 
-import { BroadcastMessage } from "./router_types.ts";
-import { Callback } from "./router_types.ts";
-import { HASH_CHANGE, PAGE_SHOW, replaceHistoryEntry } from "./utils.ts";
+type HistoryModifier =
+  | "router_broadcast"
+  | "router_unknown"
+  | "router_hash_change";
+
+type BroadcastMessage<D = unknown> = {
+  type: HistoryModifier;
+  location: string;
+  title: string;
+  data?: D;
+};
 
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
+const BROADCAST = "router_broadcast";
+const HASH_CHANGE = "router_hash_change";
+const UNKNOWN = "router_unknown";
 
-let callback: Callback = () => {};
+// quick polyfill for safari
+const bc = (BroadcastChannel) ? new BroadcastChannel("router") : window;
 
-function subscribe(cb: Callback) {
-  callback = cb;
+function getLocation(): string {
+  return window.location.href.substring(window.origin.length);
 }
 
-function pushState<D>(state: BroadcastMessage<D>) {
-  const {
-    title,
+function replaceHistoryEntry<D>(type: HistoryModifier) {
+  const location = getLocation();
+  const { title } = document;
+
+  const state: BroadcastMessage<D> = {
+    data: history.state?.data,
+    type,
     location,
-  } = state;
+    title,
+  };
+
+  history.replaceState(state, title, location);
+}
+
+function push<D>(state: BroadcastMessage<D>) {
+  const { title, location } = state;
 
   history.pushState(state, title, location);
-  callback(history.state);
+  bc.postMessage(history.state);
 }
 
 function onPopState(e: PopStateEvent) {
-  if (e.state === null) {
-    replaceHistoryEntry(HASH_CHANGE);
-  }
-
-  callback(history.state);
+  if (e.state === null) replaceHistoryEntry(HASH_CHANGE);
+  bc.postMessage(history.state);
 }
 
 function onPageShow() {
-  if (history.state === null) {
-    replaceHistoryEntry(PAGE_SHOW);
-  }
-
-  callback(history.state);
+  if (history.state === null) replaceHistoryEntry(UNKNOWN);
+  bc.postMessage(history.state);
 }
 
-window.addEventListener(PAGESHOW, onPageShow);
 window.addEventListener(POPSTATE, onPopState);
+window.addEventListener(PAGESHOW, onPageShow);
 
-export { pushState, subscribe };
+export type { BroadcastMessage };
+export { BROADCAST, HASH_CHANGE, push, UNKNOWN };

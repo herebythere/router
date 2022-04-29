@@ -21,3 +21,19 @@ User navigates to subpath immediately in browser:
 
 User can change a #hash in url in browser and it will navigate to that #hash
 in the document.
+
+
+```
+{
+  type: "router_broadcast_hash_change"
+  location: string
+  title: string
+  data: unknown
+}
+```
+
+```
+interface PopMessage {
+  type: "router_pop";
+}
+```
