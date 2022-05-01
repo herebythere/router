@@ -13,14 +13,20 @@ type BroadcastMessage<D = unknown> = {
   data?: D;
 };
 
+interface Broadcaster {
+  postMessage(message: BroadcastMessage): void;
+}
+
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 const BROADCAST = "router_broadcast";
 const HASH_CHANGE = "router_hash_change";
 const UNKNOWN = "router_unknown";
 
-// quick polyfill for safari
-const bc = (BroadcastChannel) ? new BroadcastChannel("router") : window;
+let bc: Broadcaster;
+function setBroadcaster(broadcaster: Broadcaster) {
+  bc = broadcaster;
+}
 
 function getLocation(): string {
   return window.location.href.substring(window.origin.length);
@@ -60,5 +66,5 @@ function onPageShow() {
 window.addEventListener(POPSTATE, onPopState);
 window.addEventListener(PAGESHOW, onPageShow);
 
-export type { BroadcastMessage };
-export { BROADCAST, HASH_CHANGE, push, UNKNOWN };
+export type { Broadcaster, BroadcastMessage };
+export { BROADCAST, HASH_CHANGE, push, setBroadcaster, UNKNOWN };

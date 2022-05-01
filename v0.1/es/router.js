@@ -3,7 +3,10 @@ const PAGESHOW = "pageshow";
 const BROADCAST = "router_broadcast";
 const HASH_CHANGE = "router_hash_change";
 const UNKNOWN = "router_unknown";
-const bc = BroadcastChannel ? new BroadcastChannel("router") : window;
+let bc;
+function setBroadcaster(broadcaster) {
+  bc = broadcaster;
+}
 function getLocation() {
   return window.location.href.substring(window.origin.length);
 }
@@ -37,5 +40,6 @@ export {
   BROADCAST as BROADCAST,
   HASH_CHANGE as HASH_CHANGE,
   push as push,
+  setBroadcaster as setBroadcaster,
   UNKNOWN as UNKNOWN,
 };

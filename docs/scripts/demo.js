@@ -221,7 +221,7 @@ const trustedTypesBuilderTestOnly = function () {
     prototype: ObjectPrototype,
   } = Object;
   const { hasOwnProperty: hasOwnProperty2 } = ObjectPrototype;
-  const { forEach, push } = Array.prototype;
+  const { forEach, push: push1 } = Array.prototype;
   const creatorSymbol = Symbol();
   const privates = function (obj) {
     let v2 = privateMap.get(obj);
@@ -517,7 +517,7 @@ const trustedTypesBuilderTestOnly = function () {
     enforceNameRestrictions = true;
     allowedNames.length = 0;
     forEach.call(allowedPolicyNames, (el) => {
-      push.call(allowedNames, "" + el);
+      push1.call(allowedNames, "" + el);
     });
     allowDuplicateNames = allowDuplicates;
     policyNames.length = 0;
@@ -2488,9 +2488,15 @@ var n8;
     o224.assignedNodes(n221).filter((o32) =>
       o32.nodeType === Node.ELEMENT_NODE
     );
+const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 const BROADCAST = "router_broadcast";
-const HASH_CHANGE = "router_broadcast_hash_change";
-const PAGE_SHOW = "router_broadcast_unknown";
+const HASH_CHANGE = "router_hash_change";
+const UNKNOWN = "router_unknown";
+let bc;
+function setBroadcaster(broadcaster) {
+  bc = broadcaster;
+}
 function getLocation() {
   return window.location.href.substring(window.origin.length);
 }
@@ -2505,38 +2511,35 @@ function replaceHistoryEntry(type) {
   };
   history.replaceState(state, title, location);
 }
-const POPSTATE = "popstate";
-const PAGESHOW = "pageshow";
-let callback = () => {
-};
-function subscribe(cb) {
-  callback = cb;
-}
-function pushState(state) {
+function push(state) {
   const { title, location } = state;
   history.pushState(state, title, location);
-  callback(history.state);
+  bc.postMessage(history.state);
 }
 function onPopState(e9) {
-  if (e9.state === null) {
-    replaceHistoryEntry(HASH_CHANGE);
-  }
-  callback(history.state);
+  if (e9.state === null) replaceHistoryEntry(HASH_CHANGE);
+  bc.postMessage(history.state);
 }
 function onPageShow() {
-  if (history.state === null) {
-    replaceHistoryEntry(PAGE_SHOW);
-  }
-  callback(history.state);
+  if (history.state === null) replaceHistoryEntry(UNKNOWN);
+  bc.postMessage(history.state);
 }
-window.addEventListener(PAGESHOW, onPageShow);
 window.addEventListener(POPSTATE, onPopState);
-const bc = new BroadcastChannel("router-demo");
-subscribe((message) => {
-  console.log("router subscription");
-  console.log(message);
-  bc.postMessage(message);
-});
+window.addEventListener(PAGESHOW, onPageShow);
+const bc1 = new BroadcastChannel("router-demo");
+setBroadcaster(bc1);
+const urlTitles = {
+  "/": "root",
+  "/#/dogs": "dogs",
+  "/#/cats": "cats",
+  "/#/pigs": "pigs",
+};
+const urlData = {
+  "/": "beasts tread softly underfoot",
+  "/#/dogs": "dogs hate magic tricks and need companions",
+  "/#/cats": "cats become grand hunters, do not lie to them",
+  "/#/pigs": "pigs are curious, often playful",
+};
 function _applyDecoratedDescriptor(
   target,
   property,
@@ -2578,21 +2581,15 @@ function _initializerDefineProperty(target, property, descriptor, context) {
   });
 }
 var _class, _descriptor, _dec;
-const urlTitles = {
-  "/#/home": "home page",
-  "/#/dogs": "dogs",
-  "/#/cats": "cats",
-  "/#/pigs": "pigs",
-};
-const urlData = {
-  "/#/home": "home page",
-  "/#/dogs": "dogs like magic tricks",
-  "/#/cats": "cats are grand hunters",
-  "/#/pigs": "pigs are curious, often playful",
-};
 const styles1 = r2`
+  :host, .direction-container, .location-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+  }
+
   input {
-    border: 2px solid #000;
+    border: 2px solid #eee;
     background-color: #fff;
     box-sizing: border-box;
     padding: 4px 8px;
@@ -2601,12 +2598,21 @@ const styles1 = r2`
     cursor: pointer;
   }
 
-  .container {
-    border: 1px solid #efefef;
-    box-sizing: border-box;
-    display: flex;
+  input:active {
+    background-color: #000;
+    color: #fff;
+  }
+
+  input:hover, input:focus {
+    border: 2px solid #000;
+  }
+
+  .direction-container {
+    align-items: flex-start;
+  }
+
+  .location-container {
     flex-direction: column;
-    gap: 20px;
   }
 `;
 var _dec1 = n7("demo-menu");
@@ -2617,18 +2623,20 @@ _class = _dec1(
     ];
     render() {
       const path = this.path;
-      const home = path + "/";
+      const root = path + "/";
       const dogs = path + "/#/dogs";
       const cats = path + "/#/cats";
       const pigs = path + "/#/pigs";
-      return $1`\
-      <input type="button" name="back" value="back" @pointerup="${this.onBack}">
+      return $1`
+      <div class="direction-container">
+        <input type="button" name="back" value="<--" @pointerup="${this.onBack}"></input>
+        <input type="button" name="${root}" value="/" @pointerup="${this.onPointer}"></input>
+      </div>
 
-      <div class="container">
-        <input type="button" name="${home}" value="home" @pointerup="${this.onPointer}">
-        <input type="button" name="${dogs}" value="dog"  @pointerup="${this.onPointer}">
-        <input type="button" name="${cats}" value="cat" @pointerup="${this.onPointer}">
-        <input type="button" name="${pigs}" value="pig" @pointerup="${this.onPointer}">
+      <div class="location-container">
+        <input type="button" name="${dogs}" value="#/dog"  @pointerup="${this.onPointer}">
+        <input type="button" name="${cats}" value="#/cat" @pointerup="${this.onPointer}">
+        <input type="button" name="${pigs}" value="#/pig" @pointerup="${this.onPointer}">
       </div>
     `;
     }
@@ -2641,7 +2649,7 @@ _class = _dec1(
       const nameWithoutPrefix = name.substring(this.path.length);
       const title = urlTitles[nameWithoutPrefix];
       const data = urlData[nameWithoutPrefix];
-      pushState({
+      push({
         type: BROADCAST,
         data,
         title,
@@ -2670,32 +2678,36 @@ _class = _dec1(
 ) || _class;
 var _class1;
 const HIDDEN = "hidden";
-const bc1 = new BroadcastChannel("router-demo");
-bc1.addEventListener("message", (e11) => {
+const bc2 = new BroadcastChannel("router-demo");
+bc2.addEventListener("message", (e11) => {
   if (document.visibilityState === HIDDEN) return;
   if (e11.data === null) {
     console.log("null value found!");
     return;
   }
-  callback1(e11.data);
+  callback(e11.data);
 });
 const styles11 = r2`
 	:host {
 		font-family: monospace;
-		border: 1px solid #efefef;
+    font-size: 28px;
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-		height: 70vh;
-		width: 50vw;
-		max-height: 600px;
-		max-width: 600px;
+		width: 400px;
 		overflow: auto;
 	}
+  
+  p {
+    margin-top: 0;
+  }
 `;
 let initialCallback = () => {
 };
-let callback1 = initialCallback;
+let callback = initialCallback;
+function getLocation1() {
+  return window.location.href.substring(window.origin.length);
+}
 var _dec2 = n7("demo-display");
 _class1 = _dec2(
   (_class1 = class DemoDisplay extends s6 {
@@ -2703,22 +2715,28 @@ _class1 = _dec2(
       styles11,
     ];
     render() {
+      let data = history.state?.data;
+      console.log(data);
+      console.log(getLocation1());
+      console.log("yo");
+      if (getLocation1() === "/") {
+        data = urlData["/"];
+      }
       return $1`
       <div class="container">
-        <p>${document.title}</p>
-        <p>${history.state?.data}</p>
+        <p>${data}</p>
       </div>
     `;
     }
     connectedCallback() {
       super.connectedCallback();
-      callback1 = (message) => {
+      callback = (message) => {
         this.requestUpdate();
       };
     }
     disconnectedCallback() {
       super.disconnectedCallback();
-      callback1 = initialCallback;
+      callback = initialCallback;
     }
   }) || _class1,
 ) || _class1;

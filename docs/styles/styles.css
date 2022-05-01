@@ -1,6 +1,15 @@
 /* background color */
 
-.frame {
+:root {
     display: flex;
-    gap: 40px;
+    justify-content: center;
+}
+
+.frame {
+    align-items: flex-start;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    margin-block-start: 128px;
+    width: 650px;
 }

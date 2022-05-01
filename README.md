@@ -12,28 +12,16 @@ application.
 ## About
 
 Location is often represented as a URL. But this isn't required. `Router`
-leverages a string as a semantic reference for location.
+could leverage any type as the _location_.
 
-This could be any semantic reference, in this case a string.
-
-`Router` does not parse or encode data from a location. Instead, it broadcasts the minimal amount of state alongside a url for systems to react accordingly.
-
-For example, necesssary data is sent alongside the updated url.
-:
-```TS
-router.dispatch({
+```
+router::push<L>({
     type: "router_broadcast",
-    location: "mysite.com/posts/23",
+    location: L,
     title: "routers got complex for some reason",
     data: { "post": 23 },
 })
 ```
-
-The result is a consice way to pass the data needed to represent location in a
-system, while the location becomes a visual reference to help participants
-recognize location.
-
-On the web, location happens to be represented as a URL.
 
 ## Usage
 
@@ -41,9 +29,9 @@ On the web, location happens to be represented as a URL.
 
 Push router entry:
 ```
-{
+<L>{
     type: "router_broadcast"
-    location: string
+    location: L
     title: string
     data: unknown
 }
@@ -51,27 +39,24 @@ Push router entry:
 
 Pop router entry (go back):
 ```
-interface PopMessage {
-  type: "router_pop";
+interface BackMessage {
+  type: "router_back";
+}
+```
+
+```
+interface ForwardMessage {
+  type: "router_forward";
 }
 ```
 
 ### Broadcast actions
 
 ```
-{
+<L>{
     type: "router_broadcast"
-    location: string
+    location: L
     title: string
     data: unknown
 }
 ```
-```
-{
-  type: "router_broadcast_hash_change"
-  location: string
-  title: string
-  data: unknown
-}
-```
-

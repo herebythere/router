@@ -4,9 +4,7 @@ import type { BroadcastMessage } from "./deps.ts";
 
 import { css, customElement, html, LitElement } from "./deps.ts";
 
-/**
- * Display history like an old gameboy
- */
+import { urlData } from "./faux_data.ts";
 
 type Callback = (message: BroadcastMessage<string>) => void;
 
@@ -31,40 +29,47 @@ bc.addEventListener(
 const styles = css`
 	:host {
 		font-family: monospace;
-		border: 1px solid #efefef;
+    font-size: 28px;
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-		height: 70vh;
-		width: 50vw;
-		max-height: 600px;
-		max-width: 600px;
+		width: 400px;
 		overflow: auto;
 	}
+  
+  p {
+    margin-top: 0;
+  }
 `;
 
 // extremely cheap observer
-let initialCallback = () => {};
-let callback: Callback = initialCallback;
+let initialCallback: Callback = () => {};
+let callback = initialCallback;
+
+function getLocation(): string {
+  return window.location.href.substring(window.origin.length);
+}
 
 @customElement("demo-display")
 class DemoDisplay extends LitElement {
   static styles = [styles];
 
   render() {
+    let data = history.state?.data;
+    if (data === undefined && getLocation() === "/") {
+      data = urlData["/"];
+    }
+
     return html`
       <div class="container">
-        <p>${document.title}</p>
-        <p>${history.state?.data}</p>
+        <p>${data}</p>
       </div>
     `;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    callback = (message: BroadcastMessage<string>) => {
-      this.requestUpdate();
-    };
+    callback = () => this.requestUpdate();
   }
 
   disconnectedCallback() {

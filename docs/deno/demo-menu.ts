@@ -1,3 +1,5 @@
+import { urlData, urlTitles } from "./faux_data.ts";
+
 import {
   BROADCAST,
   css,
@@ -5,32 +7,18 @@ import {
   html,
   LitElement,
   property,
-  pushState,
+  push,
 } from "./deps.ts";
 
-/**
- * Buttons should pop
- * instantaneous press
- * but slow release
- */
-
-const urlTitles: Record<string, string> = {
-  "/#/home": "home page",
-  "/#/dogs": "dogs",
-  "/#/cats": "cats",
-  "/#/pigs": "pigs",
-};
-
-const urlData: Record<string, string> = {
-  "/#/home": "home page",
-  "/#/dogs": "dogs like magic tricks",
-  "/#/cats": "cats are grand hunters",
-  "/#/pigs": "pigs are curious, often playful",
-};
-
 const styles = css`
+  :host, .direction-container, .location-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+  }
+
   input {
-    border: 2px solid #000;
+    border: 2px solid #eee;
     background-color: #fff;
     box-sizing: border-box;
     padding: 4px 8px;
@@ -39,12 +27,21 @@ const styles = css`
     cursor: pointer;
   }
 
-  .container {
-    border: 1px solid #efefef;
-    box-sizing: border-box;
-    display: flex;
+  input:active {
+    background-color: #000;
+    color: #fff;
+  }
+
+  input:hover, input:focus {
+    border: 2px solid #000;
+  }
+
+  .direction-container {
+    align-items: flex-start;
+  }
+
+  .location-container {
     flex-direction: column;
-    gap: 20px;
   }
 `;
 
@@ -58,19 +55,21 @@ class DemoMenu extends LitElement {
   render() {
     const path = this.path;
 
-    const home = path + "/";
+    const root = path + "/";
     const dogs = path + "/#/dogs";
     const cats = path + "/#/cats";
     const pigs = path + "/#/pigs";
 
-    return html`\
-      <input type="button" name="back" value="back" @pointerup="${this.onBack}">
+    return html`
+      <div class="direction-container">
+        <input type="button" name="back" value="<--" @pointerup="${this.onBack}"></input>
+        <input type="button" name="${root}" value="/" @pointerup="${this.onPointer}"></input>
+      </div>
 
-      <div class="container">
-        <input type="button" name="${home}" value="home" @pointerup="${this.onPointer}">
-        <input type="button" name="${dogs}" value="dog"  @pointerup="${this.onPointer}">
-        <input type="button" name="${cats}" value="cat" @pointerup="${this.onPointer}">
-        <input type="button" name="${pigs}" value="pig" @pointerup="${this.onPointer}">
+      <div class="location-container">
+        <input type="button" name="${dogs}" value="#/dog"  @pointerup="${this.onPointer}">
+        <input type="button" name="${cats}" value="#/cat" @pointerup="${this.onPointer}">
+        <input type="button" name="${pigs}" value="#/pig" @pointerup="${this.onPointer}">
       </div>
     `;
   }
@@ -87,7 +86,7 @@ class DemoMenu extends LitElement {
     const title = urlTitles[nameWithoutPrefix];
     const data = urlData[nameWithoutPrefix];
 
-    pushState({
+    push({
       type: BROADCAST,
       data,
       title,
