@@ -2623,7 +2623,7 @@ _class = _dec1(
     ];
     render() {
       const path = this.path;
-      const root = path + "/";
+      const root = path;
       const dogs = path + "/#/dogs";
       const cats = path + "/#/cats";
       const pigs = path + "/#/pigs";
@@ -2671,12 +2671,52 @@ _class = _dec1(
       enumerable: true,
       writable: true,
       initializer: function () {
-        return "";
+        return "/";
       },
     }),
     _class),
 ) || _class;
-var _class1;
+function _applyDecoratedDescriptor1(
+  target,
+  property,
+  decorators,
+  descriptor,
+  context,
+) {
+  var desc2 = {};
+  Object.keys(descriptor).forEach(function (key) {
+    desc2[key] = descriptor[key];
+  });
+  desc2.enumerable = !!desc2.enumerable;
+  desc2.configurable = !!desc2.configurable;
+  if ("value" in desc2 || desc2.initializer) {
+    desc2.writable = true;
+  }
+  desc2 = decorators.slice().reverse().reduce(function (desc, decorator) {
+    return decorator ? decorator(target, property, desc) || desc : desc;
+  }, desc2);
+  if (context && desc2.initializer !== void 0) {
+    desc2.value = desc2.initializer ? desc2.initializer.call(context) : void 0;
+    desc2.initializer = undefined;
+  }
+  if (desc2.initializer === void 0) {
+    Object.defineProperty(target, property, desc2);
+    desc2 = null;
+  }
+  return desc2;
+}
+function _initializerDefineProperty1(target, property, descriptor, context) {
+  if (!descriptor) return;
+  Object.defineProperty(target, property, {
+    enumerable: descriptor.enumerable,
+    configurable: descriptor.configurable,
+    writable: descriptor.writable,
+    value: descriptor.initializer
+      ? descriptor.initializer.call(context)
+      : void 0,
+  });
+}
+var _class1, _descriptor1, _dec2;
 const HIDDEN = "hidden";
 const bc2 = new BroadcastChannel("router-demo");
 bc2.addEventListener("message", (e11) => {
@@ -2705,15 +2745,15 @@ let callback = initialCallback;
 function getLocation1() {
   return window.location.href.substring(window.origin.length);
 }
-var _dec2 = n7("demo-display");
-_class1 = _dec2(
-  (_class1 = class DemoDisplay extends s6 {
+var _dec11 = n7("demo-display");
+_class1 = _dec11(
+  ((_class1 = class DemoDisplay extends s6 {
     static styles = [
       styles11,
     ];
     render() {
       let data = history.state?.data;
-      if (data === undefined && getLocation1() === "/") {
+      if (data === undefined && getLocation1() === this.path) {
         data = urlData["/"];
       }
       return $1`
@@ -2730,5 +2770,23 @@ _class1 = _dec2(
       super.disconnectedCallback();
       callback = initialCallback;
     }
+    constructor(...args) {
+      super(...args);
+      _initializerDefineProperty1(this, "path", _descriptor1, this);
+    }
   }) || _class1,
+    _dec2 = e6({
+      kind: String,
+    }),
+    _descriptor1 = _applyDecoratedDescriptor1(_class1.prototype, "path", [
+      _dec2,
+    ], {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      initializer: function () {
+        return "/";
+      },
+    }),
+    _class1),
 ) || _class1;

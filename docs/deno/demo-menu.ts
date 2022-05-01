@@ -48,14 +48,14 @@ const styles = css`
 @customElement("demo-menu")
 class DemoMenu extends LitElement {
   @property({ kind: String })
-  path = "";
+  path = "/";
 
   static styles = [styles];
 
   render() {
     const path = this.path;
 
-    const root = path + "/";
+    const root = path;
     const dogs = path + "/#/dogs";
     const cats = path + "/#/cats";
     const pigs = path + "/#/pigs";

@@ -2,7 +2,7 @@
 
 import type { BroadcastMessage } from "./deps.ts";
 
-import { css, customElement, html, LitElement } from "./deps.ts";
+import { css, customElement, html, LitElement, property } from "./deps.ts";
 
 import { urlData } from "./faux_data.ts";
 
@@ -48,11 +48,14 @@ function getLocation(): string {
 
 @customElement("demo-display")
 class DemoDisplay extends LitElement {
+  @property({ kind: String })
+  path = "/";
+
   static styles = [styles];
 
   render() {
     let data = history.state?.data;
-    if (data === undefined && getLocation() === "/") {
+    if (data === undefined && getLocation() === this.path) {
       data = urlData["/"];
     }
 
