@@ -45,6 +45,10 @@ const styles = css`
   }
 `;
 
+function getLocation(): string {
+  return window.location.href.substring(window.origin.length);
+}
+
 @customElement("demo-menu")
 class DemoMenu extends LitElement {
   @property({ kind: String })
@@ -56,9 +60,9 @@ class DemoMenu extends LitElement {
     const path = this.path;
 
     const root = path;
-    const dogs = path + "/#/dogs";
-    const cats = path + "/#/cats";
-    const pigs = path + "/#/pigs";
+    const dogs = path + "#/dogs";
+    const cats = path + "#/cats";
+    const pigs = path + "#/pigs";
 
     return html`
       <div class="direction-container">
@@ -82,9 +86,14 @@ class DemoMenu extends LitElement {
     if (!(e.target instanceof HTMLInputElement)) return;
 
     const { name } = e.target;
-    const nameWithoutPrefix = name.substring(this.path.length);
+    const nameWithoutPrefix = name.substring(this.path.length - 1);
     const title = urlTitles[nameWithoutPrefix];
     const data = urlData[nameWithoutPrefix];
+
+    console.log("demo-menu:");
+    console.log("nameWithoutPrefix", nameWithoutPrefix);
+    console.log("title:", title);
+    console.log("data:", data);
 
     push({
       type: BROADCAST,

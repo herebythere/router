@@ -55,6 +55,9 @@ class DemoDisplay extends LitElement {
 
   render() {
     let data = history.state?.data;
+    console.log("demo-display:");
+    console.log(this.path);
+    console.log(getLocation());
     if (data === undefined && getLocation() === this.path) {
       data = urlData["/"];
     }

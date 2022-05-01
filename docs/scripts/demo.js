@@ -2624,9 +2624,9 @@ _class = _dec1(
     render() {
       const path = this.path;
       const root = path;
-      const dogs = path + "/#/dogs";
-      const cats = path + "/#/cats";
-      const pigs = path + "/#/pigs";
+      const dogs = path + "#/dogs";
+      const cats = path + "#/cats";
+      const pigs = path + "#/pigs";
       return $1`
       <div class="direction-container">
         <input type="button" name="back" value="<--" @pointerup="${this.onBack}"></input>
@@ -2646,9 +2646,13 @@ _class = _dec1(
     onPointer(e10) {
       if (!(e10.target instanceof HTMLInputElement)) return;
       const { name } = e10.target;
-      const nameWithoutPrefix = name.substring(this.path.length);
+      const nameWithoutPrefix = name.substring(this.path.length - 1);
       const title = urlTitles[nameWithoutPrefix];
       const data = urlData[nameWithoutPrefix];
+      console.log("demo-menu:");
+      console.log("nameWithoutPrefix", nameWithoutPrefix);
+      console.log("title:", title);
+      console.log("data:", data);
       push({
         type: BROADCAST,
         data,
@@ -2753,6 +2757,9 @@ _class1 = _dec11(
     ];
     render() {
       let data = history.state?.data;
+      console.log("demo-display:");
+      console.log(this.path);
+      console.log(getLocation1());
       if (data === undefined && getLocation1() === this.path) {
         data = urlData["/"];
       }
