@@ -17,11 +17,7 @@ bc.addEventListener(
   (e: MessageEvent<BroadcastMessage<string>>) => {
     if (document.visibilityState === HIDDEN) return;
 
-    if (e.data === null) {
-      console.log("null value found!");
-      return;
-    }
-
+    if (e.data === null) return;
     callback(e.data);
   },
 );

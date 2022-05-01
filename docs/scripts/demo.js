@@ -2536,7 +2536,7 @@ const urlTitles = {
 };
 const urlData = {
   "/": "beasts tread softly underfoot",
-  "/#/dogs": "dogs hate magic tricks and need companions",
+  "/#/dogs": "dogs crave companions and magic",
   "/#/cats": "cats become grand hunters, do not lie to them",
   "/#/pigs": "pigs are curious, often playful",
 };
@@ -2681,10 +2681,7 @@ const HIDDEN = "hidden";
 const bc2 = new BroadcastChannel("router-demo");
 bc2.addEventListener("message", (e11) => {
   if (document.visibilityState === HIDDEN) return;
-  if (e11.data === null) {
-    console.log("null value found!");
-    return;
-  }
+  if (e11.data === null) return;
   callback(e11.data);
 });
 const styles11 = r2`
@@ -2716,10 +2713,7 @@ _class1 = _dec2(
     ];
     render() {
       let data = history.state?.data;
-      console.log(data);
-      console.log(getLocation1());
-      console.log("yo");
-      if (getLocation1() === "/") {
+      if (data === undefined && getLocation1() === "/") {
         data = urlData["/"];
       }
       return $1`
@@ -2730,9 +2724,7 @@ _class1 = _dec2(
     }
     connectedCallback() {
       super.connectedCallback();
-      callback = (message) => {
-        this.requestUpdate();
-      };
+      callback = () => this.requestUpdate();
     }
     disconnectedCallback() {
       super.disconnectedCallback();

@@ -7,7 +7,7 @@ const urlTitles: Record<string, string> = {
 
 const urlData: Record<string, string> = {
   "/": "beasts tread softly underfoot",
-  "/#/dogs": "dogs hate magic tricks and need companions",
+  "/#/dogs": "dogs crave companions and magic",
   "/#/cats": "cats become grand hunters, do not lie to them",
   "/#/pigs": "pigs are curious, often playful",
 };
