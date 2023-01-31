@@ -2,8 +2,6 @@
 // deno-lint-ignore-file
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
-const POPSTATE = "popstate";
-const PAGESHOW = "pageshow";
 const EMPTY = "";
 let prevHistoryState;
 let bc;
@@ -11,10 +9,9 @@ function setBroadcaster(broadcaster) {
     bc = broadcaster;
 }
 function push(state) {
-    const { title , location  } = state;
     prevHistoryState = state;
-    history.pushState(state, EMPTY, location);
-    document.title = title;
+    history.pushState(state, EMPTY, state.location);
+    document.title = state.title;
     if (bc === undefined) return;
     bc.postMessage(history.state);
 }
@@ -46,6 +43,6 @@ function onPageShow() {
     if (bc === undefined) return;
     bc.postMessage(history.state);
 }
-window.addEventListener(POPSTATE, onPopState);
-window.addEventListener(PAGESHOW, onPageShow);
+window.addEventListener("popstate", onPopState);
+window.addEventListener("pageshow", onPageShow);
 export { push as push, setBroadcaster as setBroadcaster };
