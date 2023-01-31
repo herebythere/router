@@ -11,52 +11,47 @@ application.
 
 ## About
 
-Location is often represented as a URL. But this isn't required. `Router`
-could leverage any type as the _location_.
+Location is often represented as a URL. But this isn't required. `Router` could
+leverage any type as the _location_.
+
+
+## Usage
+
+### Broadcast actions
 
 ```
-router::push<L>({
-    type: "router_broadcast",
+<L, D>{
+    location: L
+    title: string
+    data: D
+}
+```
+
+### Broadcaster Interface
+
+```
+Broadcaster {
+	postMessage(message) {
+		...
+	}
+}
+
+setBroadcaster()
+```
+
+### Dispatch actions
+
+Push router entry:
+
+```
+push<L>({
     location: L,
     title: "routers got complex for some reason",
     data: { "post": 23 },
 })
 ```
 
-## Usage
+## License
 
-### Dispatch actions
+BSD 3-Clause License
 
-Push router entry:
-```
-<L>{
-    type: "router_broadcast"
-    location: L
-    title: string
-    data: unknown
-}
-```
-
-Pop router entry (go back):
-```
-interface BackMessage {
-  type: "router_back";
-}
-```
-
-```
-interface ForwardMessage {
-  type: "router_forward";
-}
-```
-
-### Broadcast actions
-
-```
-<L>{
-    type: "router_broadcast"
-    location: L
-    title: string
-    data: unknown
-}
-```

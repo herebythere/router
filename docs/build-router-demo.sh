@@ -12,4 +12,4 @@ dom_tsconfig=$current_dir/deno/tsconfig.json
 
 deno bundle --config $dom_tsconfig $dom_demo_pathname $dom_bundled_pathname
 
-deno fmt $current_dir
+# deno fmt $current_dir

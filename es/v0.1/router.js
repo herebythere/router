@@ -48,22 +48,4 @@ function onPageShow() {
 }
 window.addEventListener(POPSTATE, onPopState);
 window.addEventListener(PAGESHOW, onPageShow);
-setBroadcaster(window);
-function sendRandomHistory() {
-    const location = `${Math.floor(Math.random() * 1000)}`;
-    push({
-        data: Math.random() * 100,
-        title: location,
-        location
-    });
-}
-const button = document.querySelector("button");
-button.addEventListener("click", sendRandomHistory);
-const section = document.querySelector("section");
-function receiveHistory(event) {
-    console.log(event);
-    const paragraph = document.createElement("p");
-    paragraph.textContent = JSON.stringify(event.data);
-    section.insertBefore(paragraph, section.firstChild);
-}
-window.addEventListener("message", receiveHistory);
+export { push as push, setBroadcaster as setBroadcaster };
