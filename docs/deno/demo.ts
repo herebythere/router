@@ -22,7 +22,7 @@ button.addEventListener("click", sendRandomHistory);
 const section = document.querySelector("section")!;
 
 function receiveHistory(event: MessageEvent) {
-	console.log(event);
+  console.log(event);
 
   const paragraph = document.createElement("p")!;
   paragraph.textContent = JSON.stringify(event.data);

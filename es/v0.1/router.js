@@ -12,9 +12,9 @@ function setBroadcaster(broadcaster) {
 }
 function push(state) {
     const { title , location  } = state;
+    prevHistoryState = state;
     history.pushState(state, EMPTY, location);
     document.title = title;
-    prevHistoryState = state;
     if (bc === undefined) return;
     bc.postMessage(history.state);
 }
@@ -30,8 +30,8 @@ function replaceHistoryEntry() {
     };
     history.replaceState(state, EMPTY, location);
 }
-function onPopState(e) {
-    if (e.state === null) replaceHistoryEntry();
+function onPopState() {
+    if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
     const { title  } = history.state;
     if (title) {
@@ -42,10 +42,6 @@ function onPopState(e) {
 }
 function onPageShow() {
     if (history.state === null) replaceHistoryEntry();
-    const { title  } = history.state;
-    if (title) {
-        document.title = title;
-    }
     prevHistoryState = history.state;
     if (bc === undefined) return;
     bc.postMessage(history.state);

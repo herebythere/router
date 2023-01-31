@@ -8,5 +8,4 @@ interface BroadcasterInterface<D = unknown> {
   postMessage(message: BroadcastMessage<D>): void;
 }
 
-
-export type { BroadcasterInterface, BroadcastMessage }
+export type { BroadcasterInterface, BroadcastMessage };

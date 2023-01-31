@@ -1,11 +1,13 @@
-import type { BroadcastMessage, BroadcasterInterface } from "../type_flyweight/router.ts";
+import type {
+  BroadcasterInterface,
+  BroadcastMessage,
+} from "../type_flyweight/router.ts";
 
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 const EMPTY = "";
 
 let prevHistoryState: BroadcastMessage;
-
 let bc: BroadcasterInterface;
 function setBroadcaster(broadcaster: BroadcasterInterface) {
   bc = broadcaster;
@@ -14,10 +16,10 @@ function setBroadcaster(broadcaster: BroadcasterInterface) {
 function push<D>(state: BroadcastMessage<D>) {
   const { title, location } = state;
 
+  prevHistoryState = state;
   history.pushState(state, EMPTY, location);
   document.title = title;
-  prevHistoryState = state;
-  
+
   if (bc === undefined) return;
   bc.postMessage(history.state);
 }
@@ -37,9 +39,9 @@ function replaceHistoryEntry() {
   history.replaceState(state, EMPTY, location);
 }
 
-function onPopState(e: PopStateEvent) {
-  if (e.state === null) replaceHistoryEntry();
-  
+function onPopState() {
+  if (history.state === null) replaceHistoryEntry();
+
   prevHistoryState = history.state;
   const { title } = history.state;
   if (title) {
@@ -52,9 +54,9 @@ function onPopState(e: PopStateEvent) {
 
 function onPageShow() {
   if (history.state === null) replaceHistoryEntry();
-  
-	prevHistoryState = history.state;
-	
+
+  prevHistoryState = history.state;
+
   if (bc === undefined) return;
   bc.postMessage(history.state);
 }
