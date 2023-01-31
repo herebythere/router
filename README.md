@@ -14,7 +14,6 @@ application.
 Location is often represented as a URL. But this isn't required. `Router` could
 leverage any type as the _location_.
 
-
 ## Usage
 
 ### Broadcast actions
@@ -54,4 +53,3 @@ push<L>({
 ## License
 
 BSD 3-Clause License
-
