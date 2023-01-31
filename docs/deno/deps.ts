@@ -1,18 +1,6 @@
-import "https://cdn.skypack.dev/trusted-types?dts";
-
-export type { Broadcaster, BroadcastMessage } from "../../v0.1/deno/mod.ts";
-
-// @deno-types="https://cdn.skypack.dev/lit?dts";
-export { css, html, LitElement } from "https://cdn.skypack.dev/lit?dts";
-export {
-  customElement,
-  property,
-  state,
-} from "https://cdn.skypack.dev/lit/decorators";
+export type { BroadcasterInterface, BroadcastMessage } from "../../deno/v0.1/mod.ts";
 
 export {
-  BROADCAST,
-  HASH_CHANGE,
   push,
   setBroadcaster,
-} from "../../v0.1/deno/mod.ts";
+} from "../../deno/v0.1/mod.ts";
