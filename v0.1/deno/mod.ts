@@ -1,4 +1,4 @@
-export type { Broadcaster, BroadcastMessage } from "./router.ts";
+export type { BroadcasterInterface, BroadcastMessage } from "./type_flyweight/router.ts";
 
 export {
   BROADCAST,
@@ -6,4 +6,4 @@ export {
   push,
   setBroadcaster,
   UNKNOWN,
-} from "./router.ts";
+} from "./router/router.ts";

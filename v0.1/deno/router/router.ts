@@ -1,27 +1,9 @@
-// brian taylor vann
-// router
-
-type HistoryModifier =
-  | "router_broadcast"
-  | "router_unknown"
-  | "router_hash_change";
-
-type BroadcastMessage<D = unknown> = {
-  type: HistoryModifier;
-  location: string;
-  title: string;
-  data?: D;
-};
-
-interface Broadcaster {
-  postMessage(message: BroadcastMessage): void;
-}
-
 const POPSTATE = "popstate";
 const PAGESHOW = "pageshow";
 const BROADCAST = "router_broadcast";
 const HASH_CHANGE = "router_hash_change";
 const UNKNOWN = "router_unknown";
+const EMPTY = "";
 
 let bc: Broadcaster;
 function setBroadcaster(broadcaster: Broadcaster) {
@@ -34,32 +16,45 @@ function getLocation(): string {
 
 function replaceHistoryEntry<D>(type: HistoryModifier) {
   const location = getLocation();
-  const { title } = document;
-
   const state: BroadcastMessage<D> = {
     data: history.state?.data,
-    type,
+    title: document.title,
     location,
-    title,
+    type,
   };
 
-  history.replaceState(state, title, location);
+  history.replaceState(state, EMPTY, location);
 }
 
 function push<D>(state: BroadcastMessage<D>) {
   const { title, location } = state;
 
-  history.pushState(state, title, location);
+  history.pushState(state, EMPTY, location);
+  document.title = title;
+  
+  if (bc === undefined) return;
   bc.postMessage(history.state);
 }
 
 function onPopState(e: PopStateEvent) {
   if (e.state === null) replaceHistoryEntry(HASH_CHANGE);
+  const { title } = history.state;
+  if (title) {
+    document.title = title;
+  }
+
+  if (bc === undefined) return;
   bc.postMessage(history.state);
 }
 
 function onPageShow() {
   if (history.state === null) replaceHistoryEntry(UNKNOWN);
+  const {title} = history.state;
+  if (title) {
+    document.title = title;
+  }
+
+  if (bc === undefined) return;
   bc.postMessage(history.state);
 }
 
