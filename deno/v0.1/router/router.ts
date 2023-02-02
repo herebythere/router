@@ -1,23 +1,22 @@
 import type {
   BroadcasterInterface,
-  BroadcastMessage,
+  BroadcastInterface,
 } from "../type_flyweight/router.ts";
 
 const EMPTY = "";
 
-let prevHistoryState: BroadcastMessage;
+let prevHistoryState: BroadcastInterface;
 let bc: BroadcasterInterface;
 function setBroadcaster(broadcaster: BroadcasterInterface) {
   bc = broadcaster;
 }
 
-function push<D>(state: BroadcastMessage<D>) {
+function push<D>(state: BroadcastInterface<D>) {
   prevHistoryState = state;
   history.pushState(state, EMPTY, state.location);
   document.title = state.title;
 
-  if (bc === undefined) return;
-  bc.postMessage(history.state);
+  bc?.postMessage(history.state);
 }
 
 function getLocation(): string {
@@ -26,7 +25,7 @@ function getLocation(): string {
 
 function replaceHistoryEntry() {
   const location = getLocation();
-  const state: BroadcastMessage = {
+  const state: BroadcastInterface = {
     data: prevHistoryState?.data,
     title: document.title,
     location,
@@ -39,24 +38,22 @@ function onPopState() {
   if (history.state === null) replaceHistoryEntry();
 
   prevHistoryState = history.state;
-  const { title } = history.state;
-  if (title) {
-    document.title = title;
-  }
+  document.title = history.state.title;
 
-  if (bc === undefined) return;
-  bc.postMessage(history.state);
+  bc?.postMessage(history.state);
 }
 
 function onPageShow() {
   if (history.state === null) replaceHistoryEntry();
   prevHistoryState = history.state;
 
-  if (bc === undefined) return;
-  bc.postMessage(history.state);
+  bc?.postMessage(history.state);
 }
 
 window.addEventListener("popstate", onPopState);
 window.addEventListener("pageshow", onPageShow);
+
+// if loaded lazily call onpageshow
+onPageShow();
 
 export { push, setBroadcaster };
