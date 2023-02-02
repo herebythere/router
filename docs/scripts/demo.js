@@ -12,10 +12,12 @@ function push(state) {
     prevHistoryState = state;
     history.pushState(state, EMPTY, state.location);
     document.title = state.title;
-    if (bc === undefined) return;
-    bc.postMessage(history.state);
+    bc?.postMessage(history.state);
 }
 function getLocation() {
+    console.log(window.location.href);
+    console.log(window.origin);
+    console.log(window.location.href.substring(window.origin.length));
     return window.location.href.substring(window.origin.length);
 }
 function replaceHistoryEntry() {
@@ -30,26 +32,22 @@ function replaceHistoryEntry() {
 function onPopState() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
-    const { title  } = history.state;
-    if (title) {
-        document.title = title;
-    }
-    if (bc === undefined) return;
-    bc.postMessage(history.state);
+    document.title = history.state.title;
+    bc?.postMessage(history.state);
 }
 function onPageShow() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
-    if (bc === undefined) return;
-    bc.postMessage(history.state);
+    bc?.postMessage(history.state);
 }
 window.addEventListener("popstate", onPopState);
 window.addEventListener("pageshow", onPageShow);
+onPageShow();
 setBroadcaster(window);
 function sendRandomHistory() {
-    const location = `${Math.floor(Math.random() * 1000)}`;
+    const location = `/${Math.floor(Math.random() * 1000)}`;
     push({
-        data: Math.random() * 100,
+        data: Math.floor(Math.random() * 100),
         title: location,
         location
     });

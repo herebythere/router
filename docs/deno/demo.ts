@@ -8,9 +8,9 @@ import { push, setBroadcaster } from "./deps.ts";
 setBroadcaster(window);
 
 function sendRandomHistory() {
-  const location = `${Math.floor(Math.random() * 1000)}`;
+  const location = `/${Math.floor(Math.random() * 1000)}`;
   push({
-    data: Math.random() * 100,
+    data: Math.floor(Math.random() * 100),
     title: location,
     location,
   });
