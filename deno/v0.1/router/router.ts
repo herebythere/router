@@ -20,9 +20,6 @@ function push<D>(state: BroadcastInterface<D>) {
 }
 
 function getLocation(): string {
-  console.log(window.location.href);
-  console.log(window.origin);
-  console.log(window.location.href.substring(window.origin.length));
   return window.location.href.substring(window.origin.length);
 }
 
