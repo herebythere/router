@@ -1,11 +1,11 @@
-type BroadcastMessage<D = unknown> = {
+type BroadcastInterface<D = unknown> = {
   location: string;
   title: string;
   data?: D;
 };
 
 interface BroadcasterInterface<D = unknown> {
-  postMessage(message: BroadcastMessage<D>): void;
+  postMessage(message: BroadcastInterface<D>): void;
 }
 
-export type { BroadcasterInterface, BroadcastMessage };
+export type { BroadcasterInterface, BroadcastInterface };
