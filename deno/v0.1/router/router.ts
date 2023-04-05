@@ -1,14 +1,15 @@
 import type {
-  BroadcasterInterface,
   BroadcastInterface,
+  BroadcasterInterface,
 } from "../type_flyweight/router.ts";
 
 const EMPTY = "";
 
 let prevHistoryState: BroadcastInterface;
-let bc: BroadcasterInterface;
-function setBroadcaster(broadcaster: BroadcasterInterface) {
-  bc = broadcaster;
+let broadcaster: BroadcasterInterface;
+
+function setBroadcaster(updatedBroadcdaster: BroadcasterInterface) {
+	broadcaster = updatedBroadcdaster;
 }
 
 function push<D>(state: BroadcastInterface<D>) {
@@ -16,7 +17,7 @@ function push<D>(state: BroadcastInterface<D>) {
   history.pushState(state, EMPTY, state.location);
   document.title = state.title;
 
-  bc?.postMessage(history.state);
+	broadcaster?.postMessage(history.state);
 }
 
 function getLocation(): string {
@@ -40,20 +41,20 @@ function onPopState() {
   prevHistoryState = history.state;
   document.title = history.state.title;
 
-  bc?.postMessage(history.state);
+	broadcaster?.postMessage(history.state);
 }
 
 function onPageShow() {
   if (history.state === null) replaceHistoryEntry();
   prevHistoryState = history.state;
 
-  bc?.postMessage(history.state);
+	broadcaster?.postMessage(history.state);
 }
 
 window.addEventListener("popstate", onPopState);
 window.addEventListener("pageshow", onPageShow);
 
-// if loaded lazily call onpageshow
+// call onpageshow if loaded lazily 
 onPageShow();
 
 export { push, setBroadcaster };

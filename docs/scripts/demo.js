@@ -4,20 +4,13 @@
 
 const EMPTY = "";
 let prevHistoryState;
-let bc;
-function setBroadcaster(broadcaster) {
-    bc = broadcaster;
-}
 function push(state) {
     prevHistoryState = state;
     history.pushState(state, EMPTY, state.location);
     document.title = state.title;
-    bc?.postMessage(history.state);
+    window.dispatchEvent(new Event("hbt__router_event"));
 }
 function getLocation() {
-    console.log(window.location.href);
-    console.log(window.origin);
-    console.log(window.location.href.substring(window.origin.length));
     return window.location.href.substring(window.origin.length);
 }
 function replaceHistoryEntry() {
@@ -33,17 +26,16 @@ function onPopState() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
     document.title = history.state.title;
-    bc?.postMessage(history.state);
+    window.dispatchEvent(new Event("hbt__router_event"));
 }
 function onPageShow() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
-    bc?.postMessage(history.state);
+    window.dispatchEvent(new Event("hbt__router_event"));
 }
 window.addEventListener("popstate", onPopState);
 window.addEventListener("pageshow", onPageShow);
 onPageShow();
-setBroadcaster(window);
 function sendRandomHistory() {
     const location = `/${Math.floor(Math.random() * 1000)}`;
     push({
@@ -55,10 +47,9 @@ function sendRandomHistory() {
 const button = document.querySelector("button");
 button.addEventListener("click", sendRandomHistory);
 const section = document.querySelector("section");
-function receiveHistory(event) {
-    console.log(event);
+function receiveHistory() {
     const paragraph = document.createElement("p");
-    paragraph.textContent = JSON.stringify(event.data);
+    paragraph.textContent = JSON.stringify(history.state);
     section.insertBefore(paragraph, section.firstChild);
 }
-window.addEventListener("message", receiveHistory);
+window.addEventListener("hbt__router_event", receiveHistory);

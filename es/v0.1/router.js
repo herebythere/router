@@ -4,20 +4,17 @@
 
 const EMPTY = "";
 let prevHistoryState;
-let bc;
-function setBroadcaster(broadcaster) {
-    bc = broadcaster;
+let broadcaster;
+function setBroadcaster(updatedBroadcdaster) {
+    broadcaster = updatedBroadcdaster;
 }
 function push(state) {
     prevHistoryState = state;
     history.pushState(state, EMPTY, state.location);
     document.title = state.title;
-    bc?.postMessage(history.state);
+    broadcaster?.postMessage(history.state);
 }
 function getLocation() {
-    console.log(window.location.href);
-    console.log(window.origin);
-    console.log(window.location.href.substring(window.origin.length));
     return window.location.href.substring(window.origin.length);
 }
 function replaceHistoryEntry() {
@@ -33,12 +30,12 @@ function onPopState() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
     document.title = history.state.title;
-    bc?.postMessage(history.state);
+    broadcaster?.postMessage(history.state);
 }
 function onPageShow() {
     if (history.state === null) replaceHistoryEntry();
     prevHistoryState = history.state;
-    bc?.postMessage(history.state);
+    broadcaster?.postMessage(history.state);
 }
 window.addEventListener("popstate", onPopState);
 window.addEventListener("pageshow", onPageShow);
