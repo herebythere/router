@@ -15,16 +15,16 @@ class DOMRouter implements RouterInterface {
   }
 
   setup() {
-    window.addEventListener("popstate", this.onPopState);
-    window.addEventListener("pageshow", this.onPageShow);
+    window.addEventListener("popstate", this.onHistoryChange);
+    window.addEventListener("pageshow", this.onHistoryChange);
     if (this.prevHistoryState === null) {
       this.onPageShow();
     }
   }
 
   teardown() {
-    window.removeEventListener("popstate", this.onPopState);
-    window.removeEventListener("pageshow", this.onPageShow);
+    window.removeEventListener("popstate", this.onHistoryChange);
+    window.removeEventListener("pageshow", this.onHistoryChange);
   }
   
   replaceHistoryEntry() {
@@ -38,14 +38,7 @@ class DOMRouter implements RouterInterface {
     history.replaceState(state, EMPTY, location);
   }
 
-  onPageShow() {
-    if (history.state === null) this.replaceHistoryEntry();
-    this.prevHistoryState = history.state;
-
-    this.broadcaster.postMessage(history.state);
-  }
-
-  onPopState() {
+  onHistoryChange() {
     if (history.state === null) this.replaceHistoryEntry();
 
     document.title = history.state.title;
