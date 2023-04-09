@@ -1,13 +1,17 @@
-import { push } from "./deps.ts";
+import { DOMRouter } from "./deps.ts";
 
 /*
   use broadcast channel dedicated to publishing state across contexts contexts
   like windows, tabs,
 */
 
+const router = new DOMRouter(window);
+router.setup();
+
+
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
-  push({
+  router.push({
     data: Math.floor(Math.random() * 100),
     title: location,
     location,
@@ -26,4 +30,4 @@ function receiveHistory() {
   section.insertBefore(paragraph, section.firstChild);
 }
 
-window.addEventListener("hbt__router_event", receiveHistory);
+window.addEventListener("message", receiveHistory);

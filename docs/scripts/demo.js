@@ -3,42 +3,55 @@
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
 const EMPTY = "";
-let prevHistoryState;
-function push(state) {
-    prevHistoryState = state;
-    history.pushState(state, EMPTY, state.location);
-    document.title = state.title;
-    window.dispatchEvent(new Event("hbt__router_event"));
-}
-function getLocation() {
-    return window.location.href.substring(window.origin.length);
-}
-function replaceHistoryEntry() {
-    const location = getLocation();
-    const state = {
-        data: prevHistoryState?.data,
-        title: document.title,
-        location
-    };
-    history.replaceState(state, EMPTY, location);
-}
-function onPopState() {
-    if (history.state === null) replaceHistoryEntry();
+class DOMRouter {
+    broadcaster;
     prevHistoryState = history.state;
-    document.title = history.state.title;
-    window.dispatchEvent(new Event("hbt__router_event"));
+    constructor(broadcaster){
+        this.broadcaster = broadcaster;
+    }
+    replaceHistoryEntry() {
+        const location = window.location.href.substring(window.origin.length);
+        const state = {
+            data: this.prevHistoryState["data"],
+            title: document.title,
+            location
+        };
+        history.replaceState(state, EMPTY, location);
+    }
+    setup() {
+        window.addEventListener("popstate", this.onPopState);
+        window.addEventListener("pageshow", this.onPageShow);
+        if (this.prevHistoryState === null) {
+            this.replaceHistoryEntry();
+        }
+    }
+    teardown() {
+        window.removeEventListener("popstate", this.onPopState);
+        window.removeEventListener("pageshow", this.onPageShow);
+    }
+    onPageShow() {
+        if (history.state === null) this.replaceHistoryEntry();
+        this.prevHistoryState = history.state;
+        this.broadcaster.postMessage(history.state);
+    }
+    onPopState() {
+        if (history.state === null) this.replaceHistoryEntry();
+        document.title = history.state.title;
+        this.prevHistoryState = history.state;
+        this.broadcaster.postMessage(history.state);
+    }
+    push(message) {
+        history.pushState(message, EMPTY, message.location);
+        document.title = message.title;
+        this.prevHistoryState = message;
+        this.broadcaster.postMessage(history.state);
+    }
 }
-function onPageShow() {
-    if (history.state === null) replaceHistoryEntry();
-    prevHistoryState = history.state;
-    window.dispatchEvent(new Event("hbt__router_event"));
-}
-window.addEventListener("popstate", onPopState);
-window.addEventListener("pageshow", onPageShow);
-onPageShow();
+const router = new DOMRouter(window);
+router.setup();
 function sendRandomHistory() {
     const location = `/${Math.floor(Math.random() * 1000)}`;
-    push({
+    router.push({
         data: Math.floor(Math.random() * 100),
         title: location,
         location
@@ -52,4 +65,4 @@ function receiveHistory() {
     paragraph.textContent = JSON.stringify(history.state);
     section.insertBefore(paragraph, section.firstChild);
 }
-window.addEventListener("hbt__router_event", receiveHistory);
+window.addEventListener("message", receiveHistory);

@@ -1,11 +1,18 @@
-interface BroadcastInterface<D = unknown> {
+interface MessageInterface<D = unknown> {
   location: string;
   title: string;
   data?: D;
 };
 
 interface BroadcasterInterface<D = unknown> {
-  postMessage(broadcast: BroadcastInterface): void;
+  postMessage(message: MessageInterface<D>): void;
 };
 
-export type { BroadcastInterface, BroadcasterInterface };
+interface RouterInterface {
+	setup(): void;
+	teardown(): void;
+	push<D>(message: MessageInterface<D>): void;
+}
+
+
+export type { MessageInterface, BroadcasterInterface, RouterInterface };
