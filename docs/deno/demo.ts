@@ -8,7 +8,6 @@ import { DOMRouter } from "./deps.ts";
 const router = new DOMRouter(window);
 router.setup();
 
-
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
   router.push({
