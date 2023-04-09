@@ -1,6 +1,7 @@
 export type {
   BroadcasterInterface,
-  BroadcastInterface,
+  MessageInterface,
+  RouterInterface,
 } from "./type_flyweight/router.ts";
 
-export { push, setBroadcaster } from "./router/router.ts";
+export { DOMRouter } from "./dom_router/dom_router.ts";

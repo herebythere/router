@@ -3,50 +3,55 @@
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
 const EMPTY = "";
-let prevHistoryState;
-let bc;
-function setBroadcaster(broadcaster) {
-    bc = broadcaster;
-}
-function push(state) {
-    prevHistoryState = state;
-    history.pushState(state, EMPTY, state.location);
-    document.title = state.title;
-    bc?.postMessage(history.state);
-}
-function getLocation() {
-    console.log(window.location.href);
-    console.log(window.origin);
-    console.log(window.location.href.substring(window.origin.length));
-    return window.location.href.substring(window.origin.length);
-}
-function replaceHistoryEntry() {
-    const location = getLocation();
-    const state = {
-        data: prevHistoryState?.data,
-        title: document.title,
-        location
-    };
-    history.replaceState(state, EMPTY, location);
-}
-function onPopState() {
-    if (history.state === null) replaceHistoryEntry();
+class DOMRouter {
+    broadcaster;
     prevHistoryState = history.state;
-    document.title = history.state.title;
-    bc?.postMessage(history.state);
+    constructor(broadcaster){
+        this.broadcaster = broadcaster;
+    }
+    replaceHistoryEntry() {
+        const location = window.location.href.substring(window.origin.length);
+        const state = {
+            data: this.prevHistoryState["data"],
+            title: document.title,
+            location
+        };
+        history.replaceState(state, EMPTY, location);
+    }
+    setup() {
+        window.addEventListener("popstate", this.onPopState);
+        window.addEventListener("pageshow", this.onPageShow);
+        if (this.prevHistoryState === null) {
+            this.replaceHistoryEntry();
+        }
+    }
+    teardown() {
+        window.removeEventListener("popstate", this.onPopState);
+        window.removeEventListener("pageshow", this.onPageShow);
+    }
+    onPageShow() {
+        if (history.state === null) this.replaceHistoryEntry();
+        this.prevHistoryState = history.state;
+        this.broadcaster.postMessage(history.state);
+    }
+    onPopState() {
+        if (history.state === null) this.replaceHistoryEntry();
+        document.title = history.state.title;
+        this.prevHistoryState = history.state;
+        this.broadcaster.postMessage(history.state);
+    }
+    push(message) {
+        history.pushState(message, EMPTY, message.location);
+        document.title = message.title;
+        this.prevHistoryState = message;
+        this.broadcaster.postMessage(history.state);
+    }
 }
-function onPageShow() {
-    if (history.state === null) replaceHistoryEntry();
-    prevHistoryState = history.state;
-    bc?.postMessage(history.state);
-}
-window.addEventListener("popstate", onPopState);
-window.addEventListener("pageshow", onPageShow);
-onPageShow();
-setBroadcaster(window);
+const router = new DOMRouter(window);
+router.setup();
 function sendRandomHistory() {
     const location = `/${Math.floor(Math.random() * 1000)}`;
-    push({
+    router.push({
         data: Math.floor(Math.random() * 100),
         title: location,
         location
@@ -55,10 +60,9 @@ function sendRandomHistory() {
 const button = document.querySelector("button");
 button.addEventListener("click", sendRandomHistory);
 const section = document.querySelector("section");
-function receiveHistory(event) {
-    console.log(event);
+function receiveHistory() {
     const paragraph = document.createElement("p");
-    paragraph.textContent = JSON.stringify(event.data);
+    paragraph.textContent = JSON.stringify(history.state);
     section.insertBefore(paragraph, section.firstChild);
 }
 window.addEventListener("message", receiveHistory);
