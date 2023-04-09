@@ -7,13 +7,26 @@ import type {
 const EMPTY = "";
 
 class DOMRouter implements RouterInterface {
-  broadcaster: BroadcasterInterface;
   prevHistoryState: MessageInterface = history.state;
+  broadcaster: BroadcasterInterface;
 
   constructor(broadcaster: BroadcasterInterface) {
     this.broadcaster = broadcaster;
   }
 
+  setup() {
+    window.addEventListener("popstate", this.onPopState);
+    window.addEventListener("pageshow", this.onPageShow);
+    if (this.prevHistoryState === null) {
+      this.onPageShow();
+    }
+  }
+
+  teardown() {
+    window.removeEventListener("popstate", this.onPopState);
+    window.removeEventListener("pageshow", this.onPageShow);
+  }
+  
   replaceHistoryEntry() {
     const location = window.location.href.substring(window.origin.length);
     const state: MessageInterface = {
@@ -23,19 +36,6 @@ class DOMRouter implements RouterInterface {
     };
 
     history.replaceState(state, EMPTY, location);
-  }
-
-  setup() {
-    window.addEventListener("popstate", this.onPopState);
-    window.addEventListener("pageshow", this.onPageShow);
-    if (this.prevHistoryState === null) {
-      this.replaceHistoryEntry();
-    }
-  }
-
-  teardown() {
-    window.removeEventListener("popstate", this.onPopState);
-    window.removeEventListener("pageshow", this.onPageShow);
   }
 
   onPageShow() {
