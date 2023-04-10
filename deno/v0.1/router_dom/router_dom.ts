@@ -1,7 +1,6 @@
 import type {
   BroadcasterInterface,
   MessageInterface,
-  RouterInterface,
 } from "../type_flyweight/router.ts";
 
 const ROUTER = "router";
