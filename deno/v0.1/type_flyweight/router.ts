@@ -1,5 +1,5 @@
 interface MessageInterface<D = unknown> {
-	type: "router";
+  type: "router";
   location: string;
   title: string;
   data?: D;

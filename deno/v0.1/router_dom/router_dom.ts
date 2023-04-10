@@ -12,7 +12,7 @@ let broadcaster: BroadcasterInterface = window;
 function replaceHistoryEntry() {
   const location = window.location.href.substring(window.origin.length);
   const state: MessageInterface = {
-  	type: ROUTER,
+    type: ROUTER,
     title: document.title,
     data: undefined,
     location,
@@ -28,10 +28,10 @@ function onHistoryChange() {
   prevHistoryState = history.state;
 
   broadcaster.postMessage(history.state);
-};
+}
 
 function setBroadcaster(caster: BroadcasterInterface) {
-	broadcaster = caster;
+  broadcaster = caster;
 }
 
 function push<D>(message: MessageInterface<D>) {
@@ -44,4 +44,4 @@ function push<D>(message: MessageInterface<D>) {
 window.addEventListener("popstate", onHistoryChange);
 window.addEventListener("pageshow", onHistoryChange);
 
-export { push };
+export { push, setBroadcaster };
