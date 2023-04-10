@@ -29,7 +29,6 @@ class DOMRouter {
         history.replaceState(state, EMPTY, location);
     }
     onHistoryChange = (e)=>{
-        console.log(e);
         if (history.state === null) this.replaceHistoryEntry();
         document.title = history.state.title;
         this.prevHistoryState = history.state;
