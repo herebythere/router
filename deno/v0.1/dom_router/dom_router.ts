@@ -12,25 +12,25 @@ class DOMRouter implements RouterInterface {
 
   constructor(broadcaster: BroadcasterInterface) {
     this.broadcaster = broadcaster;
-  }
-
-  setup() {
     window.addEventListener("popstate", this.onHistoryChange);
     window.addEventListener("pageshow", this.onHistoryChange);
     if (this.prevHistoryState === null) {
-      this.onPageShow();
+      this.onHistoryChange();
     }
+  }
+
+  setup() {
   }
 
   teardown() {
     window.removeEventListener("popstate", this.onHistoryChange);
     window.removeEventListener("pageshow", this.onHistoryChange);
   }
-  
+
   replaceHistoryEntry() {
     const location = window.location.href.substring(window.origin.length);
     const state: MessageInterface = {
-      data: this.prevHistoryState["data"],
+      data: this.prevHistoryState?.data,
       title: document.title,
       location,
     };
@@ -38,14 +38,14 @@ class DOMRouter implements RouterInterface {
     history.replaceState(state, EMPTY, location);
   }
 
-  onHistoryChange() {
+  onHistoryChange = (e?: Event) => {
     if (history.state === null) this.replaceHistoryEntry();
 
     document.title = history.state.title;
     this.prevHistoryState = history.state;
 
-    this.broadcaster.postMessage(history.state);
-  }
+    this.broadcaster?.postMessage(history.state);
+  };
 
   push<D>(message: MessageInterface<D>) {
     history.pushState(message, EMPTY, message.location);
