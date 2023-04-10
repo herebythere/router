@@ -13,5 +13,5 @@ es_router=$es_dir/router-dom.js
 deno bundle --config $tsconfig $router $es_router
 # deno bundle $router_test $es_router_test
 
-# deno fmt $current_dir
-# deno fmt $es_dir
+deno fmt $current_dir
+deno fmt $es_dir

@@ -22,6 +22,9 @@ function onHistoryChange() {
     prevHistoryState = history.state;
     broadcaster.postMessage(history.state);
 }
+function setBroadcaster(caster) {
+    broadcaster = caster;
+}
 function push(message) {
     history.pushState(message, EMPTY, message.location);
     document.title = message.title;
@@ -29,4 +32,4 @@ function push(message) {
 }
 window.addEventListener("popstate", onHistoryChange);
 window.addEventListener("pageshow", onHistoryChange);
-export { push as push };
+export { push as push, setBroadcaster as setBroadcaster };

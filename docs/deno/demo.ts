@@ -8,7 +8,7 @@ import { push } from "./deps.ts";
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
   push({
-  	type: "router",
+    type: "router",
     title: location,
     data: Math.floor(Math.random() * 100),
     location,
