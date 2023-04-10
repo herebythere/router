@@ -6,13 +6,13 @@ import { RouterDOM } from "./deps.ts";
 */
 
 const router = new RouterDOM(window);
-router.setup();
 
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
   router.push({
-    data: Math.floor(Math.random() * 100),
+  	type: "router",
     title: location,
+    data: Math.floor(Math.random() * 100),
     location,
   });
 }

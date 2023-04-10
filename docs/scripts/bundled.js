@@ -2,14 +2,23 @@
 // deno-lint-ignore-file
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
+const ROUTER = "router";
 const EMPTY = "";
+let prevHistoryState = history.state;
+function replaceHistoryEntry() {
+    const location = window.location.href.substring(window.origin.length);
+    const state = {
+        type: ROUTER,
+        title: document.title,
+        data: undefined,
+        location
+    };
+    history.replaceState(state, EMPTY, location);
+}
 class RouterDOM {
-    prevHistoryState = history.state;
     broadcaster;
     constructor(broadcaster){
         this.broadcaster = broadcaster;
-    }
-    setup() {
         window.addEventListener("popstate", this.onHistoryChange);
         window.addEventListener("pageshow", this.onHistoryChange);
     }
@@ -17,35 +26,25 @@ class RouterDOM {
         window.removeEventListener("popstate", this.onHistoryChange);
         window.removeEventListener("pageshow", this.onHistoryChange);
     }
-    replaceHistoryEntry() {
-        const location = window.location.href.substring(window.origin.length);
-        const state = {
-            data: this.prevHistoryState?.data,
-            title: document.title,
-            location
-        };
-        history.replaceState(state, EMPTY, location);
-    }
-    onHistoryChange = (e)=>{
-        if (history.state === null) this.replaceHistoryEntry();
+    onHistoryChange = ()=>{
+        if (history.state === null) replaceHistoryEntry();
         document.title = history.state.title;
-        this.prevHistoryState = history.state;
-        this.broadcaster?.postMessage(history.state);
+        prevHistoryState = history.state;
+        this.broadcaster.postMessage(history.state);
     };
     push(message) {
         history.pushState(message, EMPTY, message.location);
         document.title = message.title;
-        this.prevHistoryState = message;
         this.broadcaster.postMessage(history.state);
     }
 }
 const router = new RouterDOM(window);
-router.setup();
 function sendRandomHistory() {
     const location = `/${Math.floor(Math.random() * 1000)}`;
     router.push({
-        data: Math.floor(Math.random() * 100),
+        type: "router",
         title: location,
+        data: Math.floor(Math.random() * 100),
         location
     });
 }

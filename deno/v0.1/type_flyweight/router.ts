@@ -1,4 +1,5 @@
 interface MessageInterface<D = unknown> {
+	type: "router";
   location: string;
   title: string;
   data?: D;
@@ -9,7 +10,6 @@ interface BroadcasterInterface<D = unknown> {
 }
 
 interface RouterInterface {
-  setup(): void;
   teardown(): void;
   push<D>(message: MessageInterface<D>): void;
 }
