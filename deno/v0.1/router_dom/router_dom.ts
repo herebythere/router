@@ -6,18 +6,28 @@ import type {
 
 const EMPTY = "";
 
-class DOMRouter implements RouterInterface {
-  broadcaster: BroadcasterInterface;
+class RouterDOM implements RouterInterface {
   prevHistoryState: MessageInterface = history.state;
+  broadcaster: BroadcasterInterface;
 
   constructor(broadcaster: BroadcasterInterface) {
     this.broadcaster = broadcaster;
   }
 
+  setup() {
+    window.addEventListener("popstate", this.onHistoryChange);
+    window.addEventListener("pageshow", this.onHistoryChange);
+  }
+
+  teardown() {
+    window.removeEventListener("popstate", this.onHistoryChange);
+    window.removeEventListener("pageshow", this.onHistoryChange);
+  }
+
   replaceHistoryEntry() {
     const location = window.location.href.substring(window.origin.length);
     const state: MessageInterface = {
-      data: this.prevHistoryState["data"],
+      data: this.prevHistoryState?.data,
       title: document.title,
       location,
     };
@@ -25,34 +35,14 @@ class DOMRouter implements RouterInterface {
     history.replaceState(state, EMPTY, location);
   }
 
-  setup() {
-    window.addEventListener("popstate", this.onPopState);
-    window.addEventListener("pageshow", this.onPageShow);
-    if (this.prevHistoryState === null) {
-      this.replaceHistoryEntry();
-    }
-  }
-
-  teardown() {
-    window.removeEventListener("popstate", this.onPopState);
-    window.removeEventListener("pageshow", this.onPageShow);
-  }
-
-  onPageShow() {
-    if (history.state === null) this.replaceHistoryEntry();
-    this.prevHistoryState = history.state;
-
-    this.broadcaster.postMessage(history.state);
-  }
-
-  onPopState() {
+  onHistoryChange = (e?: Event) => {
     if (history.state === null) this.replaceHistoryEntry();
 
     document.title = history.state.title;
     this.prevHistoryState = history.state;
 
-    this.broadcaster.postMessage(history.state);
-  }
+    this.broadcaster?.postMessage(history.state);
+  };
 
   push<D>(message: MessageInterface<D>) {
     history.pushState(message, EMPTY, message.location);
@@ -63,4 +53,4 @@ class DOMRouter implements RouterInterface {
   }
 }
 
-export { DOMRouter };
+export { RouterDOM };
