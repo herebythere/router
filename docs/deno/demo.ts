@@ -1,18 +1,16 @@
-import { RouterDOM } from "./deps.ts";
+import { push } from "./deps.ts";
 
 /*
   use broadcast channel dedicated to publishing state across contexts contexts
   like windows, tabs,
 */
 
-const router = new RouterDOM(window);
-router.setup();
-
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
-  router.push({
-    data: Math.floor(Math.random() * 100),
+  push({
+  	type: "router",
     title: location,
+    data: Math.floor(Math.random() * 100),
     location,
   });
 }
