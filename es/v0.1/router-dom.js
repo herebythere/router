@@ -3,11 +3,25 @@
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
 const EMPTY = "";
+<<<<<<<< HEAD:es/v0.1/router-dom.js
 class RouterDOM {
+========
+class DOMRouter {
+>>>>>>>> main:es/v0.1/router.js
     prevHistoryState = history.state;
     broadcaster;
     constructor(broadcaster){
         this.broadcaster = broadcaster;
+        window.addEventListener("popstate", this.onHistoryChange);
+        window.addEventListener("pageshow", this.onHistoryChange);
+        if (this.prevHistoryState === null) {
+            this.onHistoryChange();
+        }
+    }
+    setup() {}
+    teardown() {
+        window.removeEventListener("popstate", this.onHistoryChange);
+        window.removeEventListener("pageshow", this.onHistoryChange);
     }
     setup() {
         window.addEventListener("popstate", this.onHistoryChange);
