@@ -6,6 +6,17 @@ import type {
 
 const EMPTY = "";
 
+function replaceHistoryEntry() {
+  const location = window.location.href.substring(window.origin.length);
+  const state: MessageInterface = {
+    data: this.prevHistoryState?.data,
+    title: document.title,
+    location,
+  };
+
+  history.replaceState(state, EMPTY, location);
+}
+
 class RouterDOM implements RouterInterface {
   prevHistoryState: MessageInterface = history.state;
   broadcaster: BroadcasterInterface;
@@ -24,24 +35,13 @@ class RouterDOM implements RouterInterface {
     window.removeEventListener("pageshow", this.onHistoryChange);
   }
 
-  replaceHistoryEntry() {
-    const location = window.location.href.substring(window.origin.length);
-    const state: MessageInterface = {
-      data: this.prevHistoryState?.data,
-      title: document.title,
-      location,
-    };
-
-    history.replaceState(state, EMPTY, location);
-  }
-
-  onHistoryChange = (e?: Event) => {
-    if (history.state === null) this.replaceHistoryEntry();
+  onHistoryChange = () => {
+    if (history.state === null) replaceHistoryEntry();
 
     document.title = history.state.title;
     this.prevHistoryState = history.state;
 
-    this.broadcaster?.postMessage(history.state);
+    this.broadcaster.postMessage(history.state);
   };
 
   push<D>(message: MessageInterface<D>) {
