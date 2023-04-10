@@ -1,3 +1,3 @@
-export type { MessageInterface } from "../../deno/v0.1/mod.ts";
+export type { MessageInterface } from "../../deno/v0.1/mod.dom.ts";
 
-export { DOMRouter } from "../../deno/v0.1/mod.ts";
+export { RouterDOM } from "../../deno/v0.1/mod.dom.ts";

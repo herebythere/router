@@ -4,4 +4,4 @@ export type {
   RouterInterface,
 } from "./type_flyweight/router.ts";
 
-export { DOMRouter } from "./dom_router/dom_router.ts";
+export { RouterDOM } from "./router_dom/router_dom.ts";

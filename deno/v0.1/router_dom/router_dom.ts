@@ -6,20 +6,17 @@ import type {
 
 const EMPTY = "";
 
-class DOMRouter implements RouterInterface {
+class RouterDOM implements RouterInterface {
   prevHistoryState: MessageInterface = history.state;
   broadcaster: BroadcasterInterface;
 
   constructor(broadcaster: BroadcasterInterface) {
     this.broadcaster = broadcaster;
-    window.addEventListener("popstate", this.onHistoryChange);
-    window.addEventListener("pageshow", this.onHistoryChange);
-    if (this.prevHistoryState === null) {
-      this.onHistoryChange();
-    }
   }
 
   setup() {
+    window.addEventListener("popstate", this.onHistoryChange);
+    window.addEventListener("pageshow", this.onHistoryChange);
   }
 
   teardown() {
@@ -56,4 +53,4 @@ class DOMRouter implements RouterInterface {
   }
 }
 
-export { DOMRouter };
+export { RouterDOM };
