@@ -1,25 +1,15 @@
 # Router
 
-A ridiculously concise SPA router.
+`Router` is a store that broadcasts location data to an application.
 
 Check out the [demo](https://herebythere.github.io/router/).
-
-## Abstract
-
-`Router` is a store that broadcasts location to concerned parts of an
-application.
-
-## About
-
-Location is often represented as a URL. But this isn't required. `Router` could
-leverage any type as the _location_.
 
 ## Usage
 
 ### Broadcast actions
 
 ```
-<L, D>{
+BroadcastAction<L, D> {
     location: L
     title: string
     data: D
@@ -43,7 +33,13 @@ setBroadcaster()
 Push router entry:
 
 ```
-push<L>({
+BroadcastAction {
+    location: "articles/how-to-make-a-router",
+    title: "routers got complex for some reason",
+    data: { "post": 23 },
+}
+
+push<L>(action: BroadcastAction){
     location: L,
     title: "routers got complex for some reason",
     data: { "post": 23 },

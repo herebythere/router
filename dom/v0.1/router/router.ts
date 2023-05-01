@@ -1,10 +1,9 @@
-import type {
-  BroadcasterInterface,
-  MessageInterface,
-} from "../type_flyweight/router.ts";
+import type { BroadcasterInterface, MessageInterface } from "../deps.ts";
 
 const ROUTER = "router";
 const EMPTY = "";
+const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 
 let prevHistoryState: unknown = history.state;
 let broadcaster: BroadcasterInterface = window;
@@ -41,7 +40,7 @@ function push<D>(message: MessageInterface<D>) {
   broadcaster.postMessage(history.state);
 }
 
-window.addEventListener("popstate", onHistoryChange);
-window.addEventListener("pageshow", onHistoryChange);
+window.addEventListener(POPSTATE, onHistoryChange);
+window.addEventListener(PAGESHOW, onHistoryChange);
 
 export { push, setBroadcaster };
