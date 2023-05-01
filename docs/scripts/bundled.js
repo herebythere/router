@@ -4,6 +4,8 @@
 
 const ROUTER = "router";
 const EMPTY = "";
+const POPSTATE = "popstate";
+const PAGESHOW = "pageshow";
 let prevHistoryState = history.state;
 let broadcaster = window;
 function replaceHistoryEntry() {
@@ -27,8 +29,8 @@ function push(message) {
     document.title = message.title;
     broadcaster.postMessage(history.state);
 }
-window.addEventListener("popstate", onHistoryChange);
-window.addEventListener("pageshow", onHistoryChange);
+window.addEventListener(POPSTATE, onHistoryChange);
+window.addEventListener(PAGESHOW, onHistoryChange);
 function sendRandomHistory() {
     const location = `/${Math.floor(Math.random() * 1000)}`;
     push({
