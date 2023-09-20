@@ -1,10 +1,5 @@
 import { push } from "./deps.ts";
 
-/*
-  use broadcast channel dedicated to publishing state across contexts contexts
-  like windows, tabs,
-*/
-
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
   push({

@@ -24,8 +24,6 @@ Broadcaster {
 		...
 	}
 }
-
-setBroadcaster()
 ```
 
 ### Dispatch actions
@@ -39,7 +37,7 @@ BroadcastAction {
     data: { "post": 23 },
 }
 
-push<L>(action: BroadcastAction){
+push<L>(BroadcastAction{
     location: L,
     title: "routers got complex for some reason",
     data: { "post": 23 },
