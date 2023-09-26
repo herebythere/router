@@ -1,12 +1,10 @@
-interface MessageInterface<D = unknown> {
-  type: "router";
-  location: string;
+interface MinimalRouterState {
   title: string;
-  data?: D;
+  location: string;
 }
 
-interface BroadcasterInterface<D = unknown> {
-  postMessage(message: MessageInterface<D>): void;
+interface BroadcasterInterface {
+  postMessage(message: unknown): void;
 }
 
-export type { BroadcasterInterface, MessageInterface };
+export type { BroadcasterInterface, MinimalRouterState };

@@ -1,11 +1,25 @@
-import { push } from "./deps.ts";
+import { Router } from "./deps.ts";
+
+function replaceHistoryEntry() {
+	const location = window.location.href.substring(window.origin.length);
+	const state: MessageInterface = {
+	  type: ROUTER,
+	  title: document.title,
+	  location,
+	};
+
+	history.replaceState(state, EMPTY, location);
+}
+
+replaceHistoryEntry();
+
+const bc = new BroadcastChannel("router_demo");
+const router = new Router(bc);
 
 function sendRandomHistory() {
   const location = `/${Math.floor(Math.random() * 1000)}`;
-  push({
-    type: "router",
+  router.push({
     title: location,
-    data: Math.floor(Math.random() * 100),
     location,
   });
 }
@@ -22,4 +36,4 @@ function receiveHistory() {
   section.insertBefore(paragraph, section.firstChild);
 }
 
-window.addEventListener("message", receiveHistory);
+bc.addEventListener("message", receiveHistory);
