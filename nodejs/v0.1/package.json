@@ -1,5 +1,9 @@
 {
-  "main": "./dist",
+  "main": "./dist/mod.js",
+  "scripts": {
+  	"build": "tsc",
+  	"fmt": "pretter ./ --write"
+  },
   "devDependencies": {
     "prettier": "^3.2.5",
     "tsc": "^2.0.4"
