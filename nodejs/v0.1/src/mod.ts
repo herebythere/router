@@ -3,4 +3,4 @@ export type {
   MinimalRouterState,
 } from "./type_flyweight/router.ts";
 
-export { Router } from "./router/router.ts";
+export { push, onHistoryChange } from "./router/router.js";
