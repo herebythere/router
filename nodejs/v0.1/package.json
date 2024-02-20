@@ -1,7 +1,7 @@
 {
-	"main": "./dist",
-	"devDependencies": {
-		"prettier": "^3.2.5",
-		"tsc": "^2.0.4"
-	}
+  "main": "./dist",
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "tsc": "^2.0.4"
+  }
 }
